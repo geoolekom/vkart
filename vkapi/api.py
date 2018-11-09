@@ -60,7 +60,7 @@ def get_group(api, url):
 
     posts = load_posts(api, group_id, 10, verbose=False)
     # print(posts)
-    processed_posts = process_posts(posts, group_id, group_name)
+    processed_posts = process_posts(posts)
     # print(processed_posts)
 
     return {
@@ -68,6 +68,18 @@ def get_group(api, url):
         'title': api.groups.getById(group_id=group_id)[0]['name'],
         'members': list(iterate_call(api.groups.getMembers, 1000, group_id=group_id)),
         'goods': list(iterate_call(api.market.get, 200, owner_id=-group_id)),
+        'posts': processed_posts
+    }
+
+def get_group_posts(api, url):
+    group_name = group_name_from_url(url)
+    group_id = api.groups.getById(group_id=group_name)[0]['id']
+
+    posts = load_posts(api, group_id, 10, verbose=False)
+    processed_posts = process_posts(posts)
+
+    return {
+        'groups': [group_name, group_id, api.groups.getById(group_id=group_id)[0]['name']],
         'posts': processed_posts
     }
 
@@ -149,16 +161,15 @@ def create_post(wall):
     post['height'] = best_size['height']
     post['width'] = best_size['width']
     post['rating'] = 0.01
+    post['id'] = wall['id']
     return True, post
 
 
-def process_posts(walls, group_id, group_name):
+def process_posts(walls):
     posts = []
     for wall in walls:
         success_process, post = create_post(wall)
         if success_process:
-            post['group_id'] = group_id
-            post['group_name'] = group_name
             posts.append(post) 
 
     return posts
