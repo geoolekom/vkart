@@ -1,4 +1,5 @@
 import vk
+import time
 
 def get_api(access_token):
     session = vk.Session(access_token=access_token)
@@ -9,10 +10,29 @@ def group_name_from_url(url):
         url = url[:-1]
     return url.split('/')[-1]
 
-def get_goods(api, url):
-    owner_name = group_name_from_url(url)
-    owner_id = api.groups.getById(group_id=owner_name)[0]['id']
-    return api.market.get(owner_id=-owner_id)
+
+def iterate_call(call, count, max_offset=None, **kwargs):
+    if max_offset is None:
+        max_offset = call(count=0, **kwargs)['count']
+
+    for offset in range(0, max_offset, count):
+        count = min(count, max_offset - offset)
+        call_result = call(offset=offset, count=count, **kwargs)['items']
+        time.sleep(0.4)
+        for result in call_result:
+            yield result
+
+
+def get_group(api, url):
+    group_name = group_name_from_url(url)
+    group_id = api.groups.getById(group_id=group_name)[0]['id']
+
+    return {
+        'url': url,
+        'title': api.groups.getById(group_id=group_id)[0]['name'],
+        'members': list(iterate_call(api.groups.getMembers, 1000, group_id=group_id)),
+        'goods': list(iterate_call(api.market.get, 200, owner_id=-group_id))
+    }
 
 def load_posts(api, community_id, count, user_token, version, offset = 0, verbose=True):
     current_offset = offset
