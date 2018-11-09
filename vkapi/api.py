@@ -1,7 +1,20 @@
 import vk
+import vk.exceptions
+
 from parameters import vk_size_priorities
 import time
 from pprint import pprint
+
+
+def handle_api_error(return_value = None):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except vk.exceptions.VkAPIError:
+                return return_value
+        return wrapper
+    return decorator
 
 
 def get_api(access_token):
@@ -27,10 +40,12 @@ def iterate_call(call, count, max_offset=None, **kwargs):
             yield result
 
 
+@handle_api_error([])
 def get_friends(api, uid):
     return list(iterate_call(api.friends.get, 5000, user_id=uid))
 
 
+@handle_api_error([])
 def get_groups(api, uid):
     return list(iterate_call(
         lambda **kwargs: api.users.getSubscriptions(**kwargs)['groups'],
