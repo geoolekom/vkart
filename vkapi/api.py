@@ -4,7 +4,7 @@ import time
 
 def get_api(access_token):
     session = vk.Session(access_token=access_token)
-    api = vk.API(session, v='5.87')
+    return vk.API(session, v='5.87')
 
 
 def group_name_from_url(url):
