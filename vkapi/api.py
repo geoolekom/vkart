@@ -3,9 +3,11 @@ from parameters import vk_size_priorities
 import time
 from pprint import pprint
 
+
 def get_api(access_token):
     session = vk.Session(access_token=access_token)
     return vk.API(session, v='5.87')
+
 
 def group_name_from_url(url):
     if url.endswith('/'):
@@ -23,6 +25,18 @@ def iterate_call(call, count, max_offset=None, **kwargs):
         time.sleep(0.4)
         for result in call_result:
             yield result
+
+
+def get_friends(api, uid):
+    return list(iterate_call(api.friends.get, 5000, user_id=uid))
+
+
+def get_groups(api, uid):
+    return list(iterate_call(
+        lambda **kwargs: api.users.getSubscriptions(**kwargs)['groups'],
+        200,
+        user_id=uid)
+    )
 
 
 def get_group(api, url):
