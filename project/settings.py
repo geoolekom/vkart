@@ -46,6 +46,7 @@ if DEBUG:
 PROJECT_APPS = [
     'core',
     'accounts',
+    'posts',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
