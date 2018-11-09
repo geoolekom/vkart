@@ -1,15 +1,11 @@
-
-
-class Ranker:
+class Ranker(object):
     model = None
+
     def __init__(self):
         from keras.models import Model
         from keras.layers import Dense, Dropout
         from keras.applications.inception_resnet_v2 import InceptionResNetV2
-        from keras.applications.inception_resnet_v2 import preprocess_input
-        from keras.preprocessing.image import load_img, img_to_array
         import tensorflow as tf
-        from .nima_utils.score_utils import mean_score, std_score
         from django.conf import settings
 
         if Ranker.model is None:
@@ -21,7 +17,7 @@ class Ranker:
                     weights_path = settings.IMAGE_RANK_WEIGHTS_PATH
                 except:
                     import logging
-                    logging.fatal("YOU MUST SPECIFY FUNCKING WEIGHTS PATH")
+                    logging.fatal('Specify correct weights path.')
                     return
                 model = Model(base_model.input, x)
                 model.load_weights(weights_path)
@@ -30,7 +26,7 @@ class Ranker:
     def get_mean_std_scores(self, images):
         if Ranker.model is None:
             import logging
-            logging.fatal("YOU MUST SPECIFY FUNCKING WEIGHTS PATH")
+            logging.fatal('Specify correct weights path.')
             return [{'mean': 0, 'std': 0}] * len(images)
         from .nima_utils.score_utils import mean_score, std_score
         from keras.applications.inception_resnet_v2 import preprocess_input
@@ -53,7 +49,7 @@ def rank_images(images):
 def rank_urls(urls):
     import requests
     from io import BytesIO
-    from keras.preprocessing.image import load_img, img_to_array
+    from keras.preprocessing.image import img_to_array
     from PIL import Image
     images = []
     for url in urls:
@@ -66,7 +62,6 @@ def rank_urls(urls):
 
 def rank_paths(paths):
     from keras.preprocessing.image import load_img, img_to_array
-    from PIL import Image
     images = []
     for path in paths:
         x = load_img(path)
@@ -74,4 +69,3 @@ def rank_paths(paths):
         x = img_to_array(x)
         images.append(x)
     return Ranker().get_mean_std_scores(images)
-
