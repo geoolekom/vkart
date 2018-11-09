@@ -17,13 +17,19 @@ class Ranker:
                 base_model = InceptionResNetV2(input_shape=(None, None, 3), include_top=False, pooling='avg', weights=None)
                 x = Dropout(0.75)(base_model.output)
                 x = Dense(10, activation='softmax')(x)
-
-                weights_path = settings.IMAGE_RANK_WEIGHTS_PATH
+                try:
+                    weights_path = settings.IMAGE_RANK_WEIGHTS_PATH
+                except:
+                    import logging
+                    logging.fatal("YOU MUST SPECIFY FUNCKING WEIGHTS PATH")
+                    return
                 model = Model(base_model.input, x)
                 model.load_weights(weights_path)
             Ranker.model = model
 
     def get_mean_std_scores(self, images):
+        if Ranker.model is None:
+            return [{'mean': 0, 'std': 0}] * len(images)
         from .nima_utils.score_utils import mean_score, std_score
         from keras.applications.inception_resnet_v2 import preprocess_input
         import numpy as np
