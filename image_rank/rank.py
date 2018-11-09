@@ -2,10 +2,11 @@ class Ranker(object):
     model = None
 
     def __init__(self):
+        import tensorflow as tf
+
         from keras.models import Model
         from keras.layers import Dense, Dropout
         from keras.applications.inception_resnet_v2 import InceptionResNetV2
-        import tensorflow as tf
         from django.conf import settings
 
         if Ranker.model is None:
@@ -15,13 +16,14 @@ class Ranker(object):
                 x = Dense(10, activation='softmax')(x)
                 try:
                     weights_path = settings.IMAGE_RANK_WEIGHTS_PATH
-                except:
+                    model = Model(base_model.input, x)
+                    model.load_weights(weights_path)
+                except Exception as e:
                     import logging
-                    logging.fatal('Specify correct weights path.')
+                    logging.fatal(e, exc_info=True)
                     return
-                model = Model(base_model.input, x)
-                model.load_weights(weights_path)
-            Ranker.model = model
+                else:
+                    Ranker.model = model
 
     def get_mean_std_scores(self, images):
         if Ranker.model is None:
