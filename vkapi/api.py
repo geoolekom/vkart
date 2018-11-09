@@ -1,3 +1,5 @@
+import vk
+
 def group_name_from_url(url):
     if url.endswith('/'):
         url = url[:-1]
