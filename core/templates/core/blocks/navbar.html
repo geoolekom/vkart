@@ -1,0 +1,25 @@
+{% load utils static %}
+{% url 'posts:picture_list' as picture_list %}
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">
+                <img src="{% static 'core/img/vk_transparent.png' %}" width="26" style="display: inline; margin-top: -4px;"/><span>&nbsp; ART</span>
+            </a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li{% if request.path|startswith:picture_list %} class="active"{% endif %}><a href="{{ picture_list }}">Картинки</a></li>
+            <li{% if request.path|startswith:verse_list %} class="active"{% endif %}><a href="{{ verse_list }}">Стихи</a></li>
+            <li{% if request.path|startswith:text_list %} class="active"{% endif %}><a href="{{ text_list }}">Проза</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+            <li><a>{{ user.get_full_name }}</a></li>
+            <li><a href="{% url 'accounts:logout' %}"><span class="glyphicon glyphicon-log-out"></span> Выйти</a></li>
+            {% else %}
+            <li><a href="{% url 'social:begin' 'vk-oauth2' %}"><span class="glyphicon glyphicon-log-in"></span> Войти</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>

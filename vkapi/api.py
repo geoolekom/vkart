@@ -1,11 +1,26 @@
 import vk
-from parameters import vk_size_priorities
+import vk.exceptions
+
 import time
-from pprint import pprint
+
+from parameters import vk_size_priorities
+
+
+def handle_api_error(return_value=None):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except vk.exceptions.VkAPIError:
+                return return_value
+        return wrapper
+    return decorator
+
 
 def get_api(access_token):
     session = vk.Session(access_token=access_token)
     return vk.API(session, v='5.87')
+
 
 def group_name_from_url(url):
     if url.endswith('/'):
@@ -23,6 +38,20 @@ def iterate_call(call, count, max_offset=None, **kwargs):
         time.sleep(0.4)
         for result in call_result:
             yield result
+
+
+@handle_api_error([])
+def get_friends(api, uid):
+    return list(iterate_call(api.friends.get, 5000, user_id=uid))
+
+
+@handle_api_error([])
+def get_groups(api, uid):
+    return list(iterate_call(
+        lambda **kwargs: api.users.getSubscriptions(**kwargs)['groups'],
+        200,
+        user_id=uid)
+    )
 
 
 def get_group(api, url):
@@ -69,6 +98,7 @@ def load_posts(api, community_id, count, offset = 0, verbose=True):
 
     return posts
 
+
 class Photo:
 
     def __init__(self, post):
@@ -92,6 +122,7 @@ class Photo:
                '\nsecond={}'.format(self.second) + \
                '\nlink={}'.format(self.link) + \
                '\nwall_link={}'.format(self.wall_link)
+
 
 def create_post(wall):
     if not 'attachments' in wall:
@@ -119,6 +150,7 @@ def create_post(wall):
     post['width'] = best_size['width']
     post['rating'] = 0.01
     return True, post
+
 
 def process_posts(walls, group_id, group_name):
     posts = []
