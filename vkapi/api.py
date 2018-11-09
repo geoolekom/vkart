@@ -1,12 +1,12 @@
 import vk
 import vk.exceptions
 
-from parameters import vk_size_priorities
 import time
-from pprint import pprint
+
+from parameters import vk_size_priorities
 
 
-def handle_api_error(return_value = None):
+def handle_api_error(return_value=None):
     def decorator(func):
         def wrapper(*args, **kwargs):
             try:
@@ -98,6 +98,7 @@ def load_posts(api, community_id, count, offset = 0, verbose=True):
 
     return posts
 
+
 class Photo:
 
     def __init__(self, post):
@@ -121,6 +122,7 @@ class Photo:
                '\nsecond={}'.format(self.second) + \
                '\nlink={}'.format(self.link) + \
                '\nwall_link={}'.format(self.wall_link)
+
 
 def create_post(wall):
     if not 'attachments' in wall:
@@ -148,6 +150,7 @@ def create_post(wall):
     post['width'] = best_size['width']
     post['rating'] = 0.01
     return True, post
+
 
 def process_posts(walls, group_id, group_name):
     posts = []
