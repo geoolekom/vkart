@@ -1,0 +1,14 @@
+[Unit]
+Description=VK Art Gunicorn
+After=network.target
+
+[Service]
+PIDFile=/run/vkart/gunicorn.pid
+Type=forking
+User=vkart
+Group=vkart
+WorkingDirectory=/opt/vkart/src
+ExecStart=/opt/vkart/env/bin/gunicorn -c /etc/vkart/gunicorn.conf --pid /run/vkart/gunicorn.pid project.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

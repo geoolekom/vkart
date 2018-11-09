@@ -1,0 +1,15 @@
+[Unit]
+Description=VK Art Celery Default Queue
+After=redis.service
+
+[Service]
+Type=forking
+User=vkart
+Group=vkart
+WorkingDirectory=/opt/vkart/src
+ExecStart=/opt/vkart/env/bin/python -m celery multi start vkart -A project -Q default --pidfile=/run/vkart/celeryd.pid -c 4 -l INFO -f /var/log/vkart/celeryd.log -S /run/vkart/celeryd.state
+ExecStop=/opt/vkart/env/bin/python -m celery multi stopwait vkart --pidfile=/run/vkart/celeryd.pid
+ExecReload=/opt/vkart/env/bin/python -m celery multi restart vkart -A project -Q default --pidfile=/run/vkart/celeryd.pid -c 4 -l INFO -f /var/log/vkart/celeryd.log -S /run/vkart/celeryd.state
+
+[Install]
+WantedBy=multi-user.target

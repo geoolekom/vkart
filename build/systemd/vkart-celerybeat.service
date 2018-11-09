@@ -1,0 +1,15 @@
+[Unit]
+Description=VK Art Celery Beat Daemon
+After=redis.service
+
+[Service]
+Type=forking
+User=vkart
+Group=vkart
+PIDFile=/run/vkart/celerybeat.pid
+WorkingDirectory=/opt/vkart/src
+ExecStart=/opt/vkart/env/bin/python -m celery beat -A project --pidfile=/run/vkart/celerybeat.pid -l INFO -f /var/log/vkart/celerybeat.log -s /run/vkart/beat-schedule.db --detach
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
