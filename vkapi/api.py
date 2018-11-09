@@ -1,16 +1,4 @@
 import vk
-import pickle
-import time
-from pprint import pprint
-# from photo import Photo
-from skimage import io
-import pickle
-# from photo import Photo
-from collections import defaultdict
-from pprint import pprint
-import math
-import os
-import argparse
 
 def group_name_from_url(url):
     if url.endswith('/'):
