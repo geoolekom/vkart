@@ -37,12 +37,17 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
 ]
 
 if DEBUG:
     DJANGO_APPS += ['debug_toolbar']
 
-PROJECT_APPS = []
+PROJECT_APPS = [
+    'core',
+    'accounts',
+    'posts',
+]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
 
@@ -89,6 +94,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
             'debug': DEBUG
         },
@@ -116,3 +123,21 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
+
+AUTH_USER_MODEL = 'accounts.User'
+
+AUTH_MODEL_BACKEND = 'django.contrib.auth.backends.ModelBackend'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.vk.VKOAuth2',
+]
+
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = not DEBUG
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = config.get('oauth', 'VK_ID')
+SOCIAL_AUTH_VK_OAUTH2_SECRET = config.get('oauth', 'VK_SECRET')
+SOCIAL_AUTH_VK_OAUTH2_SCOPE = []
+SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['bdate', ]
+
+IMAGE_RANK_WEIGHTS_PATH = config.get('image_rank', 'WEIGHTS_PATH')
