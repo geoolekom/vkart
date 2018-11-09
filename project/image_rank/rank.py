@@ -10,8 +10,8 @@ class Ranker:
         from keras.preprocessing.image import load_img, img_to_array
         import tensorflow as tf
         from .nima_utils.score_utils import mean_score, std_score
-
         from django.conf import settings
+
         if Ranker.model is None:
             with tf.device('/CPU:0'):
                 base_model = InceptionResNetV2(input_shape=(None, None, 3), include_top=False, pooling='avg', weights=None)
@@ -29,6 +29,8 @@ class Ranker:
 
     def get_mean_std_scores(self, images):
         if Ranker.model is None:
+            import logging
+            logging.fatal("YOU MUST SPECIFY FUNCKING WEIGHTS PATH")
             return [{'mean': 0, 'std': 0}] * len(images)
         from .nima_utils.score_utils import mean_score, std_score
         from keras.applications.inception_resnet_v2 import preprocess_input
