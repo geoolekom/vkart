@@ -59,9 +59,7 @@ def get_group(api, url):
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
     posts = load_posts(api, group_id, 10, verbose=False)
-    # print(posts)
-    processed_posts = process_posts(posts)
-    # print(processed_posts)
+    processed_posts = process_posts(posts, group_id)
 
     return {
         'url': url,
@@ -76,10 +74,14 @@ def get_group_posts(api, url):
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
     posts = load_posts(api, group_id, 10, verbose=False)
-    processed_posts = process_posts(posts)
+    processed_posts = process_posts(posts, group_id)
 
     return {
-        'groups': [group_name, group_id, api.groups.getById(group_id=group_id)[0]['name']],
+        'groups': [{
+            'username': group_name,
+            'id': group_id,
+            'title': api.groups.getById(group_id=group_id)[0]['name']
+        }],
         'posts': processed_posts
     }
 
@@ -165,11 +167,12 @@ def create_post(wall):
     return True, post
 
 
-def process_posts(walls):
+def process_posts(walls, group_id):
     posts = []
     for wall in walls:
         success_process, post = create_post(wall)
         if success_process:
+            post['group_id'] = group_id
             posts.append(post) 
 
     return posts
