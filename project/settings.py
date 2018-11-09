@@ -124,6 +124,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 
+LOGIN_REDIRECT_URL = 'posts:picture_list'
 AUTH_USER_MODEL = 'accounts.User'
 
 AUTH_MODEL_BACKEND = 'django.contrib.auth.backends.ModelBackend'

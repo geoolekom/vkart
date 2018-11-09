@@ -1,0 +1,24 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="row" style="height: 50px;"></div>
+    <div class="row">
+        <div class="col-sm-offset-4 col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">VK ART: Войти</h3>
+                </div>
+                <div class="panel-body">
+                    {% lorem %}
+                    <p></p>
+                    <div class="text-center">
+                    <a class="btn btn-default" href="{% url 'social:begin' 'vk-oauth2' %}">
+                        <img src="{% static 'core/img/vk_transparent.png' %}" width="34">&nbsp;&nbsp;<span>Войти</span>
+                    </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VK Art</title>
+
+    <link rel="stylesheet" href="{% static 'core/css/bootstrap.min.css' %}">
+    {% block css %}{% endblock %}
+
+    <script src="{% static 'core/js/jquery-3.3.1.min.js' %}"></script>
+    <script src="{% static 'core/js/bootstrap.min.js' %}"></script>
+    {% block js %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <header>
+        {% include 'core/blocks/navbar.html' %}
+    </header>
+    {% endif %}
+    <main>
+        <div class="container" style="margin-top: 20px;">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+</body>
+</html>
