@@ -1,12 +1,7 @@
 from .. import api as vkapi
 from pprint import pprint
 import re
-
-
-class TfIdfContainer:
-    model = None
-    def __init__(self):
-        pass
+from .parameters import max_posts
 
 
 def text_process(s):
@@ -15,7 +10,7 @@ def text_process(s):
 
 def extract_text(api, group_id, **kwargs):
     texts = vkapi.get_group_texts(api, group_id, **kwargs)
-    pprint(texts)
+    # pprint(texts)
     res = []
     res.append(text_process(' '.join(texts['posts'])))
     res.append(text_process(' '.join(map(lambda x: x['title'] + ' ' + x['description'], texts['goods']))))
@@ -24,4 +19,4 @@ def extract_text(api, group_id, **kwargs):
 
 
 if __name__ == '__main__':
-    print(extract_text(vkapi.get_api(), '126622648', max_posts=100))
+    print(extract_text(vkapi.get_api(), '126622648', max_posts=max_posts))
