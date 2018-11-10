@@ -6,12 +6,12 @@ import time
 
 try:
     from .ratings import set_ratings
-except ImportError:
+except Exception as e:
     from ratings import set_ratings
 
 try:
     from .parameters import vk_size_priorities, access_token, version
-except ImportError:
+except Exception as e:
     from parameters import vk_size_priorities, access_token, version
 
 
@@ -80,6 +80,7 @@ def get_group_albums(api, url):
 def get_group_texts(api, url, max_posts=1e6):
     group_name = group_name_from_url(url)
     group_info = api.groups.getById(group_id=group_name, fields='status,description')[0]
+    id = group_info['id']
 
     posts = get_group_posts(api, url, max_posts)['posts']
 
@@ -187,7 +188,7 @@ class Photo(object):
                 break
 
     def __str__(self):
-        return f'likes={self.likes}\nday={self.day}\nsecond={self.second}\nlink={self.link}\nwall_link={self.wall_link}'
+        return 'likes={}\nday={}\nsecond={}\nlink={}\nwall_link={}'.format(self.likes, self.day, self.second, self.link, self.wall_link)
 
 
 def create_post(wall):
@@ -255,4 +256,6 @@ def get_best_pictures(api, group_id):
     posts = load_posts(api, group_id, 500, verbose=False)
     processed_posts = process_posts(posts)
     set_ratings(processed_posts)
-    return [post for post in processed_posts if post['rating'] > 0.95]
+    return sorted([post for post in processed_posts if post['rating'] > 0.95], key=lambda x: -x['rating'])
+
+
