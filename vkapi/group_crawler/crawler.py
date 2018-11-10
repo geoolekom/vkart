@@ -1,6 +1,7 @@
 from .execute_database import *
 from .recommendations import *
 from .parameters import *
+from .. import api as vkapi
 from time import sleep
 
 
@@ -28,7 +29,7 @@ def groups_iterate(api, seed_groups):
             seen_groups.add(group_id)
             try:
                 similar_group_ids = set(map(lambda x: x['id'], just_recommendations(api, group_id)))
-            except:
+            except Exception as e:
                 sleep(2 * sleep_constant)
                 try:
                     similar_group_ids = set(map(lambda x: x['id'], just_recommendations(api, group_id)))
@@ -43,7 +44,17 @@ def groups_iterate(api, seed_groups):
         yield group_id 
 
 
+def groups_smart_iterate(api, seed_groups):
+    from .. import group_classification
+    for group_id in groups_iterate(api, seed_groups):
+        ans = group_classification.classify_group(api, str(group_id))
+        print(group_id, ans)
+        if ans:
+            yield group_id
+
 
 if __name__ == '__main__':
-    for group_id in groups_iterate(None, generate_seed_groups()):
-        print(group_id)
+    with open('groups.txt', 'a') as f:
+        for group_id in groups_iterate(vkapi.get_api(), generate_seed_groups()):
+            f.write(str(group_id) + '\n')
+            f.flush()
