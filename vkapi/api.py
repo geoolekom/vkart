@@ -10,9 +10,9 @@ except Exception:
     from ratings import set_ratings
 
 try:
-    from .parameters import vk_size_priorities, access_token, version
+    from .parameters import vk_size_priorities, access_token, version, sleep_constant
 except Exception:
-    from parameters import vk_size_priorities, access_token, version
+    from parameters import vk_size_priorities, access_token, version, sleep_constant
 
 
 
@@ -45,7 +45,7 @@ def iterate_call(call, count, max_offset=None, **kwargs):
     for offset in range(0, max_offset, count):
         count = min(count, max_offset - offset)
         call_result = call(offset=offset, count=count, **kwargs)['items']
-        time.sleep(0.4)
+        time.sleep(sleep_constant)
         for result in call_result:
             yield result
 
@@ -146,7 +146,7 @@ def load_posts(api, community_id, count, offset=0, verbose=True):
                     posts.append(item)
 
             current_offset += 100
-            time.sleep(0.2)
+            time.sleep(sleep_constant)
         except Exception as e:
             logging.error(e, exc_info=True)
 
