@@ -9,6 +9,8 @@ class PublicGroup(BaseModel):
         verbose_name_plural = 'паблики'
 
     title = models.CharField(verbose_name='название', max_length=200)
+    # screen_name = models.CharField(verbose_name='уникальное имя группы', max_length=200)
+    # url = models.URLField(verbose_name='ссылка на группу')
 
     def __str__(self):
         return self.title
@@ -30,7 +32,7 @@ class Post(BaseModel):
     height = models.PositiveIntegerField(verbose_name='высота картинки')
     width = models.PositiveIntegerField(verbose_name='ширина картинки')
 
-    rating = models.PositiveIntegerField(verbose_name='рейтинг', default=0)
+    rating = models.FloatField(verbose_name='рейтинг', default=0)
 
     def __str__(self):
         return f'Пост {self.id}, рейтинг {self.rating}'
