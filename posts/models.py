@@ -50,18 +50,3 @@ class UserGroup(models.Model):
 
     def __str__(self):
         return f'{self.user} в {self.group.title}'
-
-
-class PostGroup(models.Model):
-    class Meta:
-        verbose_name = 'группа постов'
-        verbose_name_plural = 'группы постов'
-
-    created = models.DateTimeField(verbose_name='дата создания', auto_now_add=True)
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, verbose_name='пользователь')
-    group = models.ForeignKey('posts.PublicGroup', models.CASCADE, verbose_name='группа')
-    posts = models.ManyToManyField('posts.Post', verbose_name='посты')
-
-    def __str__(self):
-        return f'Подборка из {self.group} для {self.user}'
