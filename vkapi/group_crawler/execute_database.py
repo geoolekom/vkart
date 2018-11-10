@@ -70,8 +70,8 @@ class ExecuteDataBaseOperator():
                           self)))
 
         for i, thread in enumerate(threads):
-            if i % 15 == 0:
-                print('{} members processed'.format(25 * i))
+            # if i % 15 == 0:
+            #     print('{} members processed'.format(25 * i))
             time.sleep(max(0.35 - (current_milli_time() - self.prev_milli) / 1000.0, 0.0))
             thread.start()
 
@@ -87,8 +87,8 @@ class ExecuteDataBaseOperator():
         id_to_link = {}
         communities = Counter()
         for i in range(0, len(user_ids) - 1, 25):
-            if i % 100 == 0:
-                print('{} members processed'.format(100 * i))
+            # if i % 100 == 0:
+            #     print('{} members processed'.format(100 * i))
             time.sleep(max(0.3334 - (current_milli_time() - prev_milli) / 1000.0, 0.0))
             prev_milli = current_milli_time()
             user_subscrs, id_to_name, id_to_link = \
