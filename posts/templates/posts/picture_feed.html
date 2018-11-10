@@ -1,0 +1,88 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel='stylesheet' href='{% static 'core/libs/unitegallery/css/unite-gallery.css' %}' type='text/css' />
+    <style>
+        .btn-like {
+            cursor: pointer;
+        }
+
+        .loader {
+            position: absolute;
+            right: 10px;
+            border: 3px solid #f3f3f3; /* Light grey */
+            border-top: 3px solid black; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'core/libs/unitegallery/js/unitegallery.js' %}"></script>
+    <script src="{% static 'core/libs/unitegallery/themes/tiles/ug-theme-tiles.js' %}"></script>
+    <script>
+    $(function () {
+        $('.gallery').each(function () {
+            $(this).unitegallery({
+                gallery_theme: 'tiles',
+                tiles_type: 'justified',
+                tile_show_link_icon: true,
+                tile_enable_textpanel: true
+            });
+        });
+
+        $(document).on('click', '.btn-like', function () {
+            const likeBtn = $(this);
+            likeBtn.toggleClass('glyphicon-heart-empty').toggleClass('glyphicon-heart');
+        });
+
+        const urlLoadMorePosts = '{% url 'posts:random_picture_block' %}';
+        var currentPage = 0;
+        var loadingInProcess = false;
+
+        const loadBlock = function () {
+            $('#loader-panel').show();
+            loadingInProcess = true;
+            $.get(urlLoadMorePosts, {offset: currentPage}).done(function (r) {
+                $('.picture-block').append(r);
+                $('#loader-panel').hide();
+                currentPage ++;
+                loadingInProcess = false;
+            });
+        };
+
+        loadBlock();
+        $(window).scroll(function() {
+            if($(window).scrollTop() + $(window).height() > $(document).height() - 50 && !loadingInProcess) {
+                loadBlock();
+            }
+        });
+    })
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="picture-block"></div>
+
+    <div class="panel panel-default" id="loader-panel">
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-1 col-sm-offset-4">
+                    <div class="loader"></div>
+                </div>
+                <div class="col-sm-5">
+                    Загружаются новые посты...
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

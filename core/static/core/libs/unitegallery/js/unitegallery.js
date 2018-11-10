@@ -20514,35 +20514,12 @@ function UniteGalleryMain(){
 	 * on keypress - keyboard control
 	 */
 	function onKeyPress(event){
-		 
 		var obj = jQuery(event.target);
 		if(obj.is("textarea") || obj.is("select") || obj.is("input"))
 			return(true);
 						
-		 var keyCode = (event.charCode) ? event.charCode :((event.keyCode) ? event.keyCode :((event.which) ? event.which : 0));
-		 
-		 var wasAction = true;
-		 
-		 switch(keyCode){
-			 case 39:	//right key
-				 t.nextItem();
-			 break;
-			 case 37:	//left key
-				 t.prevItem();
-			 break;
-			 default:
-				 wasAction = false;
-			 break; 
-		 }
-		 
-		 //only first page gallery affected
-		 
-		 if(wasAction == true){
-			 event.preventDefault();
-			 event.stopPropagation();
-			 event.stopImmediatePropagation();
-		 }
-		 
+		var keyCode = (event.charCode) ? event.charCode :((event.keyCode) ? event.keyCode :((event.which) ? event.which : 0));
+
 		g_objGallery.trigger(t.events.GALLERY_KEYPRESS, [keyCode,event]);
 	}
 	
@@ -21371,7 +21348,6 @@ function UniteGalleryMain(){
 		
 		if(typeof objItem == "number")
 			objItem = t.getItem(objItem);
-		
 		var itemIndex = objItem.index;
 		if(itemIndex == g_selectedItemIndex)
 			return(true);
@@ -21413,7 +21389,7 @@ function UniteGalleryMain(){
 			newItemIndex = 0;
 		
 		//debugLine(newItemIndex,true);
-		
+
 		t.selectItem(newItemIndex, "next");
 	}
 	
@@ -23166,20 +23142,36 @@ function UGLightbox(){
 	 */
 	function onKeyPress(data, key, event){
 		
-		var isScrollKey = false;
-		
+		var isScrollKey = false, wasAction = true;
 		switch(key){
 			case 27:		//escape - close lightbox
 				if(g_temp.isOpened == true)
 					t.close("keypress");
-			break;
+				break;
 			case 38:	//up and down arrows
 			case 40:
 			case 33:	//page up and down
 			case 34:
 				isScrollKey = true;
+				break;
+			case 39:	//right key
+			 	if(g_temp.isOpened == true)
+			 		this.nextItem();
+				break;
+			case 37:	//left key
+				if(g_temp.isOpened == true)
+			 		this.prevItem();
+				break;
+			default:
+			 	wasAction = false;
 			break;
 		}
+
+		 if(g_temp.isOpened == true && wasAction == true){
+			 event.preventDefault();
+			 event.stopPropagation();
+			 event.stopImmediatePropagation();
+		 }
 		
 		if(g_temp.isOpened == true && isScrollKey == true)
 			event.preventDefault();

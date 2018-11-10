@@ -1,0 +1,31 @@
+{% for post_group in object_list %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <a href="https://vk.com/{{ post_group.group.screen_name }}">{{ post_group.group.title }}</a>
+            </h3>
+        </div>
+        <div class="panel-body">
+            <div id="gallery-{{ post_group.id }}" class="gallery">
+                {% for post in post_group.posts %}
+                    <a href="{{ post.post_url }}">
+                        <img src="{{ post.pic_url }}" data-image="{{ post.pic_url }}"
+                             data-description="{{ post.text }}"
+                             alt="<span class='glyphicon glyphicon-heart{% if not post.liked %}-empty{% endif %} btn-like'></span> {{ post.like_count }}"
+                        >
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <script>
+        $('#gallery-{{ post_group.id }}').each(function () {
+            $(this).unitegallery({
+                gallery_theme: 'tiles',
+                tiles_type: 'justified',
+                tile_show_link_icon: true,
+                tile_enable_textpanel: true
+            });
+        });
+    </script>
+{% endfor %}
