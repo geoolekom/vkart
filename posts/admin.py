@@ -15,6 +15,6 @@ class GroupAdmin(admin.ModelAdmin):
 
 
 @admin.register(PostGroup)
-class GroupAdmin(admin.ModelAdmin):
+class PostGroupAdmin(admin.ModelAdmin):
     list_display = 'user', 'group'
     raw_id_fields = 'user', 'group'
