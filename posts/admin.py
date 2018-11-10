@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from posts.models import Post, PublicGroup, UserGroup
+from posts.models import Post, PublicGroup, UserGroup, Genre
+
+
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
+    list_display = 'slug', 'title'
+    search_fields = 'slug', 'title'
 
 
 @admin.register(Post)

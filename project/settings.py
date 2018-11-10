@@ -1,5 +1,7 @@
 import os
 from configparser import ConfigParser
+from celery.schedules import crontab
+from kombu import Queue
 
 config = ConfigParser()
 
@@ -45,7 +47,7 @@ if DEBUG:
 
 PROJECT_APPS = [
     'core',
-    'accounts',
+    'accounts.apps.AccountsConfig',
     'posts',
 ]
 
@@ -148,3 +150,23 @@ IMAGE_RANK_WEIGHTS_PATH = config.get('image_rank', 'WEIGHTS_PATH')
 
 VKAPI_ACCESS_TOKEN = config.get('vkapi', 'ACCESS_TOKEN')
 VKAPI_VERSION = config.get('vkapi', 'VERSION')
+
+CELERY_BROKER_URL = config.get('celery', 'BROKER_URL')
+CELERY_RESULT_BACKEND = config.get('celery', 'RESULT_BACKEND')
+
+CELERY_RESULT_EXPIRES = 7 * 24 * 60 * 60
+CELERY_SEND_EVENTS = True
+CELERY_TASK_ALWAYS_EAGER = False
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_DEFAULT_QUEUE = 'default'
+
+CELERY_TASK_QUEUES = [
+    Queue('default'),
+]
+
+CELERY_BEAT_SCHEDULE = {
+    'payment_monitor': {
+        'task': 'posts.tasks.update_all',
+        'schedule': crontab(minute='0', hour='2'),
+    }
+}

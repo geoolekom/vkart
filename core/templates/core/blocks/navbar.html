@@ -9,9 +9,11 @@
             </a>
         </div>
         <ul class="nav navbar-nav">
-            <li{% if request.path|startswith:picture_list %} class="active"{% endif %}><a href="{{ picture_list }}">Картинки</a></li>
-            <li{% if request.path|startswith:verse_list %} class="active"{% endif %}><a href="{{ verse_list }}">Стихи</a></li>
-            <li{% if request.path|startswith:text_list %} class="active"{% endif %}><a href="{{ text_list }}">Проза</a></li>
+            <li{% if request.path|startswith:picture_list %} class="active"{% endif %}><a href="{{ picture_list }}">Все посты</a></li>
+            {% for genre in genres %}
+                {% url 'posts:genre_picture_list' genre.slug as genre_url %}
+                <li{% if request.path|startswith:genre_url %} class="active"{% endif %}><a href="{{ genre_url }}">{{ genre.title }}</a></li>
+            {% endfor %}
         </ul>
         <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}

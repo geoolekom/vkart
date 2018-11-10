@@ -1,4 +1,4 @@
-{% load static %}
+{% load static utils %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +16,7 @@
 <body>
     {% if user.is_authenticated %}
     <header>
-        {% include 'core/blocks/navbar.html' %}
+        {% navbar request %}
     </header>
     {% endif %}
     <main>

@@ -12,8 +12,22 @@ class PublicGroup(BaseModel):
     title = models.CharField(verbose_name='название', max_length=200)
     screen_name = models.CharField(verbose_name='уникальное имя группы', max_length=200)
 
+    genre = models.ForeignKey('posts.Genre', models.SET_NULL, null=True, blank=True, verbose_name='категория')
+
     def __str__(self):
         return f'{self.screen_name}: {self.title}'
+
+
+class Genre(models.Model):
+    class Meta:
+        verbose_name = 'категория'
+        verbose_name_plural = 'категории'
+
+    title = models.CharField(verbose_name='название', max_length=200)
+    slug = models.SlugField(verbose_name='slug', unique=True)
+
+    def __str__(self):
+        return self.title
 
 
 class Post(models.Model):

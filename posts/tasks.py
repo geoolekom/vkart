@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytz
+from project.celery import app
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
@@ -11,6 +12,7 @@ from vkapi.group_ranker import rank_groups_for_user
 USER_MODEL = get_user_model()
 
 
+@app.task
 def update_best_posts(user_id):
     user = USER_MODEL.objects.filter(id=user_id).first()
     if user:
@@ -18,6 +20,7 @@ def update_best_posts(user_id):
         uid = user.get_uid()
 
         if uid and api:
+            print('Обновляем пользователя {0}'.format(uid))
             group_dict_list = rank_groups_for_user(api, uid)
             group_ids = [group_dict.get('id') for group_dict in group_dict_list]
             groups = process_groups(api, group_ids)
@@ -41,3 +44,9 @@ def update_best_posts(user_id):
                     Post.objects.update_or_create(vk_id=post_vk_id, group_id=group_id, defaults=post_dict)
                 print('Загружены посты из группы {0}'.format(group_id))
             print('-----\nВыполнено.')
+
+
+@app.task
+def update_all():
+    for user in USER_MODEL.objects.all():
+        update_best_posts(user.id)

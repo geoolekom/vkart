@@ -45,7 +45,12 @@
             likeBtn.toggleClass('glyphicon-heart-empty').toggleClass('glyphicon-heart');
         });
 
-        const urlLoadMorePosts = '{% url 'posts:random_picture_block' %}';
+        var urlLoadMorePosts;
+        {% if genre %}
+        urlLoadMorePosts = '{% url 'posts:genre_random_picture_block' genre.slug %}';
+        {% else %}
+        urlLoadMorePosts = '{% url 'posts:random_picture_block' %}';
+        {% endif %}
         var currentPage = 0;
         var loadingInProcess = false;
 

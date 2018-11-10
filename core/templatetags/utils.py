@@ -4,6 +4,8 @@ from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils import numberformat
 
+from posts.models import Genre
+
 logger = logging.getLogger('django.project.' + __name__)
 
 register = template.Library()
@@ -44,3 +46,12 @@ def money(value):
 @stringfilter
 def startswith(first, second):
     return first.startswith(second)
+
+
+@register.inclusion_tag('core/blocks/navbar.html')
+def navbar(request):
+    return {
+        'genres': Genre.objects.all(),
+        'request': request,
+        'user': request.user
+    }
