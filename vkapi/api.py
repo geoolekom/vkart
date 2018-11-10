@@ -177,7 +177,7 @@ class Photo(object):
         self.likes = post['likes']['count']
         self.day = post['date'] / 86400
         self.second = post['date'] % 86400
-        self.wall_link = 'https://vk.com/wall{}_{}'.format(post["from_id"], post["id"])
+        self.wall_link = f'https://vk.com/wall{post["from_id"]}_{post["id"]}'
 
         attachment = post['attachment']
         photo = attachment['photo']
@@ -192,31 +192,35 @@ class Photo(object):
 
 
 def create_post(wall):
-    if 'attachments' not in wall:
-        return False, None
-    attachment = wall['attachments'][0]
-    if 'photo' not in attachment:
-        return False, None
+    best_size = {
+        'url': None,
+        'height': None,
+        'width': None
+    }
 
-    photo = attachment['photo']
-    best_size = photo['sizes'][0]
-    best_type = best_size['type']
-    for size in photo['sizes']:
-        if vk_size_priorities[size['type']] < vk_size_priorities[best_type]:
-            best_size = size
-            best_type = size['type']
+    if 'attachments' in wall:
+        attachment = wall['attachments'][0]
+        if 'photo' in attachment:
+            photo = attachment['photo']
+            best_size = photo['sizes'][0]
+            best_type = best_size['type']
+            for size in photo['sizes']:
+                if vk_size_priorities[size['type']] < vk_size_priorities[best_type]:
+                    best_size = size
+                    best_type = size['type']
 
     return True, {
+        'pic_url': best_size['url'],
+        'height': best_size['height'],
+        'width': best_size['width'],
+
         'id': wall['id'],
         'like_count': wall['likes']['count'],
         'timestamp': wall['date'],
         'post_url': 'https://vk.com/wall{0}_{1}'.format(wall["from_id"], wall["id"]),
         'text': wall['text'],
-        'pic_url': best_size['url'],
-        'height': best_size['height'],
-        'width': best_size['width'],
+        'group_id': - wall['from_id'],
         'rating': 0.01,
-        'group_id': - wall['from_id']
     }
 
 
