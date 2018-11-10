@@ -4,7 +4,7 @@ import vk.exceptions
 
 import time
 
-from .parameters import vk_size_priorities, access_token
+from .parameters import vk_size_priorities, access_token, version
 
 
 def handle_api_error(return_value=None):
@@ -20,7 +20,7 @@ def handle_api_error(return_value=None):
 
 def get_api():
     session = vk.Session(access_token=access_token)
-    return vk.API(session, v='5.87')
+    return vk.API(session, v=version)
 
 
 def group_name_from_url(url):
