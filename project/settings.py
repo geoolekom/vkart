@@ -142,3 +142,6 @@ SOCIAL_AUTH_VK_OAUTH2_SCOPE = []
 SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['bdate', ]
 
 IMAGE_RANK_WEIGHTS_PATH = config.get('image_rank', 'WEIGHTS_PATH')
+
+VKAPI_ACCESS_TOKEN = config.get('vkapi', 'ACCESS_TOKEN')
+VKAPI_VERSION = config.get('vkapi', 'VERSION')
