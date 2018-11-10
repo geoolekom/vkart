@@ -17,8 +17,8 @@ def train(api, path):
     corpus = make_corpus(api, group_ids)
     vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform([corpus[group_id] for group_id in group_ids])
-    cls = GradientBoostingClassifier() 
-    cls.fit(X, labels)
+    clf = GradientBoostingClassifier()
+    clf.fit(X, labels)
     joblib.dump(clf, 'content_classifier.joblib') 
     joblib.dump(vectorizer, 'vectorizer.joblib') 
 
@@ -38,6 +38,7 @@ def make_corpus(api, group_ids):
         while True:
             sleep(sleep_constant_cur)
             try:
+                print(group_id)
                 corpus[group_id] = extract_text(api, str(group_id), max_posts=max_posts)
                 break
             except:
