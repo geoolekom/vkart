@@ -171,26 +171,6 @@ def load_posts(api, community_id, count, offset=0, verbose=True):
     return posts
 
 
-class Photo(object):
-
-    def __init__(self, post):
-        self.likes = post['likes']['count']
-        self.day = post['date'] / 86400
-        self.second = post['date'] % 86400
-        self.wall_link = f'https://vk.com/wall{post["from_id"]}_{post["id"]}'
-
-        attachment = post['attachment']
-        photo = attachment['photo']
-        sizes = ['src_xxxbig', 'src_xxbig', 'src_xbig', 'src_big', 'src', 'src_small']
-        for size in sizes:
-            if size in photo:
-                self.link = photo[size]
-                break
-
-    def __str__(self):
-        return 'likes={0}\nday={1}\nsecond={2}\nlink={3}\nwall_link={4}'.format(self.likes, self.day, self.second, self.link, self.wall_link)
-
-
 def create_post(wall):
     best_size = {
         'url': None,
