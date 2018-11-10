@@ -1,10 +1,18 @@
-import logging
 import vk
 import vk.exceptions
 
+import logging
 import time
 
-from .parameters import vk_size_priorities, access_token, version
+try:
+    from .ratings import set_ratings
+except Exception as e:
+    from ratings import set_ratings
+
+try:
+    from .parameters import vk_size_priorities, access_token, version, sleep_constant
+except Exception:
+    from parameters import vk_size_priorities, access_token, version, sleep_constant
 
 
 def handle_api_error(return_value=None):
@@ -36,7 +44,7 @@ def iterate_call(call, count, max_offset=None, **kwargs):
     for offset in range(0, max_offset, count):
         count = min(count, max_offset - offset)
         call_result = call(offset=offset, count=count, **kwargs)['items']
-        time.sleep(0.4)
+        time.sleep(sleep_constant)
         for result in call_result:
             yield result
 
@@ -55,12 +63,66 @@ def get_groups(api, uid):
     )
 
 
+@handle_api_error([])
+def get_group_goods(api, url):
+    group_name = group_name_from_url(url)
+    group_id = api.groups.getById(group_id=group_name)[0]['id']
+    return list(iterate_call(api.market.get, 200, owner_id=-group_id))
+
+
+@handle_api_error([])
+def get_group_albums(api, url):
+    group_name = group_name_from_url(url)
+    group_id = api.groups.getById(group_id=group_name)[0]['id']
+    return api.photos.getAlbums(owner_id=-group_id)['items']
+
+
+def get_group_url(api, group_id):
+    group_info = api.groups.getById(group_id=str(group_id))[0]
+    return 'vk.com/{}'.format(group_info['screen_name'])
+
+
+def get_group_texts(api, url, max_posts=1e6):
+    group_name = group_name_from_url(url)
+    group_info = api.groups.getById(group_id=group_name, fields='status,description')[0]
+    id = group_info['id']
+
+    posts = get_group_posts(api, url, max_posts)['posts']
+
+    return {
+        'url': 'vk.com/{0}'.format(group_info['screen_name']),
+        'username': group_info['name'],
+        'title': group_info['screen_name'],
+        'description': group_info['description'],
+        'status': group_info['status'],
+        'posts': list(map(lambda post: post['text'], posts)),
+
+        'albums': list(
+            map(
+                lambda album: {
+                    'title': album['title'],
+                    'description': album['description']
+                },
+                get_group_albums(api, url)
+            )),
+
+        'goods': list(
+            map(
+                lambda good: {
+                    'title': good['title'],
+                    'description': good['description'],
+                },
+                get_group_goods(api, url))
+        )
+    }
+
+
 def get_group(api, url):
     group_name = group_name_from_url(url)
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
     posts = load_posts(api, group_id, 10, verbose=False)
-    processed_posts = process_posts(posts, group_id)
+    processed_posts = process_posts(posts)
 
     return {
         'url': url,
@@ -71,12 +133,12 @@ def get_group(api, url):
     }
 
 
-def get_group_posts(api, url):
+def get_group_posts(api, url, max_posts=1e6):
     group_name = group_name_from_url(url)
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
-    posts = load_posts(api, group_id, 10, verbose=False)
-    processed_posts = process_posts(posts, group_id)
+    posts = load_posts(api, group_id, max_posts, verbose=False)
+    processed_posts = process_posts(posts)
 
     return {
         'groups': [{
@@ -94,7 +156,7 @@ def load_posts(api, community_id, count, offset=0, verbose=True):
     while current_offset < offset + count:
         try:
             if verbose:
-                logging.info(f'current_offset={current_offset}')
+                logging.info('current_offset={current_offset}')
             wall = api.wall.get(
                 owner_id=-community_id,
                 offset=current_offset,
@@ -109,7 +171,7 @@ def load_posts(api, community_id, count, offset=0, verbose=True):
         except Exception as e:
             logging.error(e, exc_info=True)
         finally:
-            time.sleep(0.2)
+            time.sleep(sleep_constant)
 
     return posts
 
@@ -131,35 +193,39 @@ class Photo(object):
                 break
 
     def __str__(self):
-        return f'likes={self.likes}\nday={self.day}\nsecond={self.second}\nlink={self.link}\nwall_link={self.wall_link}'
+        return 'likes={0}\nday={1}\nsecond={2}\nlink={3}\nwall_link={4}'.format(self.likes, self.day, self.second, self.link, self.wall_link)
 
 
 def create_post(wall):
-    if 'attachments' not in wall:
-        return False, None
-    attachment = wall['attachments'][0]
-    if 'photo' not in attachment:
-        return False, None
+    best_size = {
+        'url': None,
+        'height': None,
+        'width': None
+    }
 
-    photo = attachment['photo']
-    best_size = photo['sizes'][0]
-    best_type = best_size['type']
-    for size in photo['sizes']:
-        if vk_size_priorities[size['type']] < vk_size_priorities[best_type]:
-            best_size = size
-            best_type = size['type']
+    if 'attachments' in wall:
+        attachment = wall['attachments'][0]
+        if 'photo' in attachment:
+            photo = attachment['photo']
+            best_size = photo['sizes'][0]
+            best_type = best_size['type']
+            for size in photo['sizes']:
+                if vk_size_priorities[size['type']] < vk_size_priorities[best_type]:
+                    best_size = size
+                    best_type = size['type']
 
     return True, {
-        'id': wall['id'],
-        'like_count': wall['likes']['count'],
-        'timestamp': wall['date'],
-        'post_url': f'https://vk.com/wall{wall["from_id"]}_{wall["id"]}',
-        'text': wall['text'],
         'pic_url': best_size['url'],
         'height': best_size['height'],
         'width': best_size['width'],
+
+        'id': wall['id'],
+        'like_count': wall['likes']['count'],
+        'timestamp': wall['date'],
+        'post_url': 'https://vk.com/wall{0}_{1}'.format(wall["from_id"], wall["id"]),
+        'text': wall['text'],
+        'group_id': - wall['from_id'],
         'rating': 0.01,
-        'group_id': - wall['from_id']
     }
 
 
@@ -168,13 +234,12 @@ def process_groups(api, group_ids):
     return [{'id': group['id'], 'screen_name': group['screen_name'], 'title': group['name']} for group in api_groups]
 
 
-def process_posts(walls, group_id):
+def process_posts(api_posts):
     posts = []
-    for wall in walls:
-        success_process, post = create_post(wall)
-        if success_process:
-            post['group_id'] = group_id  # TODO: выпилить, это есть в create_post
-            posts.append(post)
+    for post in api_posts:
+        success, post_dict = create_post(post)
+        if success:
+            posts.append(post_dict)
     return posts
 
 
@@ -184,12 +249,18 @@ def get_posts(api, group_ids: list):
     for group in groups:
         group_id = group['id']
         api_posts = load_posts(api, group_id, 10, verbose=False)
-        for post in api_posts:
-            success, post_dict = create_post(post)
-            if success:
-                posts.append(post_dict)
+        posts = process_posts(api_posts)
 
     return {
         'groups': groups,
         'posts': posts
     }
+
+
+def get_best_pictures(api, group_id):
+    posts = load_posts(api, group_id, 500, verbose=False)
+    processed_posts = process_posts(posts)
+    set_ratings(processed_posts)
+    return sorted([post for post in processed_posts if post['rating'] > 0.95], key=lambda x: -x['rating'])
+
+

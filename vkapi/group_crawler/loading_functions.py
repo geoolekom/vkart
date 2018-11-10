@@ -26,8 +26,8 @@ def get_community_size(community_id, api, access_token, version):
                     access_token=access_token,
                     v=version)['count']
         except Exception as e:
-            print('in get_community_size:')
-            print(e)
+            # print('in get_community_size:')
+            # print(e)
             tries += 1
             if tries > 3:
                 raise Exception(e)
@@ -39,7 +39,7 @@ def get_distributed_ids(community_id, api, access_token, version, limit=50000):
     chunks = [i for i in range(0, count // chunk_length + 1)]
     random.shuffle(chunks)
     chunks = chunks[:min(len(chunks), limit // chunk_length + 1)]
-    print('chunks={}'.format(chunks))
+    # print('chunks={}'.format(chunks))
     ids = []
     tries = 0
     for chunk in chunks:
@@ -53,13 +53,12 @@ def get_distributed_ids(community_id, api, access_token, version, limit=50000):
                     v=version
             )
             ids += members['items']
-            time.sleep(0.06)
+            time.sleep(0.5)
         except Exception as e:
-            print('exception in get_ids: {}'.format(e))
+            # print('exception in get_ids: {}'.format(e))
             tries += 1
-            if tries > 3:
-                raise Exception(e)
-            pass
+            # if tries > 3:
+            #     raise Exception(e)
     return count, ids
 
 

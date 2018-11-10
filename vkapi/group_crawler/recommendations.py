@@ -13,19 +13,19 @@ def get_recommendations(community_id,
     start = int(round(time.time() * 1000))
     N, ids = dbo.get_distributed_ids(community_id)
     finish = int(round(time.time() * 1000))
-    print('N = {}'.format(N))
-    print('dbo.get_distributed_ids time:{}'.format(finish - start))
+    # print('N = {}'.format(N))
+    # print('dbo.get_distributed_ids time:{}'.format(finish - start))
     ids.sort()
 
     random.shuffle(ids)
 
-    if output:
-        print('members_to_proceed = {}'.format(members_to_proceed))
+    # if output:
+    #     print('members_to_proceed = {}'.format(members_to_proceed))
     start = int(round(time.time() * 1000))
     communities = dbo.parallel_get_communities(ids[:min(len(ids), members_to_proceed)], 40)
     finish = int(round(time.time() * 1000))
-    print('dbo.get_communities time:{}'.format(finish - start))
-    print('mined communities: {}'.format(len(communities)))
+    # print('dbo.get_communities time:{}'.format(finish - start))
+    # print('mined communities: {}'.format(len(communities)))
     popular_communities = communities.most_common(most_common)
 
     community_sizes = {}
