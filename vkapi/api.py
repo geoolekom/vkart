@@ -106,9 +106,10 @@ def load_posts(api, community_id, count, offset=0, verbose=True):
                     posts.append(item)
 
             current_offset += 100
-            time.sleep(0.2)
         except Exception as e:
             logging.error(e, exc_info=True)
+        finally:
+            time.sleep(0.2)
 
     return posts
 
@@ -119,7 +120,7 @@ class Photo(object):
         self.likes = post['likes']['count']
         self.day = post['date'] / 86400
         self.second = post['date'] % 86400
-        self.wall_link = f'https://vk.com/wall{wall["from_id"]}_{wall["id"]}'
+        self.wall_link = f'https://vk.com/wall{post["from_id"]}_{post["id"]}'
 
         attachment = post['attachment']
         photo = attachment['photo']
