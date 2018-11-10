@@ -16,7 +16,7 @@ class PublicGroup(BaseModel):
         return f'{self.screen_name}: {self.title}'
 
 
-class Post(BaseModel):
+class Post(models.Model):
     class Meta:
         verbose_name = 'пост'
         verbose_name_plural = 'посты'
@@ -33,9 +33,23 @@ class Post(BaseModel):
     width = models.PositiveIntegerField(verbose_name='ширина картинки')
 
     rating = models.FloatField(verbose_name='рейтинг', default=0)
+    vk_id = models.BigIntegerField(verbose_name='ВК id')
 
     def __str__(self):
         return f'Пост {self.id} из {self.group}, рейтинг {self.rating}'
+
+
+class UserGroup(models.Model):
+    class Meta:
+        verbose_name = 'пользователь в группе'
+        verbose_name_plural = 'пользователи в группе'
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, verbose_name='пользователь')
+    group = models.ForeignKey('posts.PublicGroup', models.CASCADE, verbose_name='группа')
+    rating = models.FloatField(verbose_name='рейтинг', default=0)
+
+    def __str__(self):
+        return f'{self.user} в {self.group.title}'
 
 
 class PostGroup(models.Model):

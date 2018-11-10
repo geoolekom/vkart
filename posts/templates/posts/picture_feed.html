@@ -7,6 +7,22 @@
         .btn-like {
             cursor: pointer;
         }
+
+        .loader {
+            position: absolute;
+            right: 10px;
+            border: 3px solid #f3f3f3; /* Light grey */
+            border-top: 3px solid black; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 {% endblock %}
 
@@ -29,30 +45,44 @@
             likeBtn.toggleClass('glyphicon-heart-empty').toggleClass('glyphicon-heart');
         });
 
+        const urlLoadMorePosts = '{% url 'posts:random_picture_block' %}';
+        var currentPage = 0;
+        var loadingInProcess = false;
+
+        const loadBlock = function () {
+            $('#loader-panel').show();
+            loadingInProcess = true;
+            $.get(urlLoadMorePosts, {offset: currentPage}).done(function (r) {
+                $('.picture-block').append(r);
+                $('#loader-panel').hide();
+                currentPage ++;
+                loadingInProcess = false;
+            });
+        };
+
+        loadBlock();
+        $(window).scroll(function() {
+            if($(window).scrollTop() + $(window).height() > $(document).height() - 50 && !loadingInProcess) {
+                loadBlock();
+            }
+        });
     })
     </script>
 {% endblock %}
 
 {% block content %}
-    {% for post_group in object_list %}
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">
-                    <a href="https://vk.com/{{ post_group.group.screen_name }}">{{ post_group.group.title }}</a>
-                </h3>
-            </div>
-            <div class="panel-body">
-                <div id="gallery-{{ post_group.id }}" class="gallery">
-                    {% for post in post_group.posts.all %}
-                        <a href="{{ post.post_url }}">
-                            <img src="{{ post.pic_url }}" data-image="{{ post.pic_url }}"
-                                 data-description="{{ post.text }}"
-                                 alt="<span class='glyphicon glyphicon-heart{% if not post.liked %}-empty{% endif %} btn-like'></span>"
-                            >
-                        </a>
-                    {% endfor %}
+    <div class="picture-block"></div>
+
+    <div class="panel panel-default" id="loader-panel">
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-1 col-sm-offset-4">
+                    <div class="loader"></div>
+                </div>
+                <div class="col-sm-5">
+                    Загружаются новые посты...
                 </div>
             </div>
         </div>
-    {% endfor %}
+    </div>
 {% endblock %}

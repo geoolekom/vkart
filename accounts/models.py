@@ -1,6 +1,10 @@
+import json
+
 from django.db import models
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+
+from posts.utils import get_api_by_token
 
 
 class UserManager(BaseUserManager):
@@ -49,6 +53,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name
 
     def get_link(self):
-        social_auth = self.social_auth.filter(provider='vk-oauth2').first()
+        uid = self.get_uid()
+        if uid:
+            return f'https://vk.com/id{uid}'
+
+    def get_vk_auth(self):
+        return self.social_auth.filter(provider='vk-oauth2').first()
+
+    def get_uid(self):
+        social_auth = self.get_vk_auth()
         if social_auth:
-            return f'https://vk.com/id{social_auth.uid}'
+            return social_auth.uid
+
+    def get_api(self):
+        social_auth = self.get_vk_auth()
+        data = social_auth.extra_data
+        api = get_api_by_token(data.get('access_token'))
+        return api

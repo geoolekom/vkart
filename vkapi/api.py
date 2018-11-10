@@ -1,8 +1,13 @@
+from datetime import datetime
+
+import pytz
 import vk
 import vk.exceptions
 
 import logging
 import time
+
+from django.conf import settings
 
 try:
     from .ratings import set_ratings
@@ -151,7 +156,7 @@ def load_posts(api, community_id, count, offset=0, verbose=True):
     while current_offset < offset + count:
         try:
             if verbose:
-                logging.info('current_offset={current_offset}')
+                logging.info('current_offset={0}'.format(current_offset))
             wall = api.wall.get(
                 owner_id=-community_id,
                 offset=current_offset,
@@ -206,16 +211,19 @@ def create_post(wall):
             best_size = size
             best_type = size['type']
 
+    tz = pytz.timezone(settings.TIME_ZONE)
+    timestamp = datetime.fromtimestamp(wall['date'], tz)
+
     return True, {
-        'id': wall['id'],
+        'vk_id': wall['id'],
         'like_count': wall['likes']['count'],
-        'timestamp': wall['date'],
-        'post_url': 'https://vk.com/wall'.format(wall["from_id"], wall["id"]),
+        'timestamp': timestamp,
+        'post_url': 'https://vk.com/wall{0}_{1}'.format(wall["from_id"], wall["id"]),
         'text': wall['text'],
         'pic_url': best_size['url'],
         'height': best_size['height'],
         'width': best_size['width'],
-        'rating': 0.01,
+        'rating': 0,
         'group_id': - wall['from_id']
     }
 

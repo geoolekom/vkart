@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from posts.models import Post, PublicGroup, PostGroup
+from posts.models import Post, PublicGroup, PostGroup, UserGroup
 
 
 @admin.register(Post)
@@ -17,4 +17,10 @@ class GroupAdmin(admin.ModelAdmin):
 @admin.register(PostGroup)
 class PostGroupAdmin(admin.ModelAdmin):
     list_display = 'user', 'group'
-    raw_id_fields = 'user', 'group'
+    raw_id_fields = 'user', 'group', 'posts'
+
+
+@admin.register(UserGroup)
+class UserGroupAdmin(admin.ModelAdmin):
+    list_display = 'user', 'group', 'rating',
+    raw_id_fields = 'user', 'group',

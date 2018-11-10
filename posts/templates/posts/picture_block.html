@@ -7,11 +7,11 @@
         </div>
         <div class="panel-body">
             <div id="gallery-{{ post_group.id }}" class="gallery">
-                {% for post in post_group.posts.all %}
+                {% for post in post_group.posts %}
                     <a href="{{ post.post_url }}">
                         <img src="{{ post.pic_url }}" data-image="{{ post.pic_url }}"
                              data-description="{{ post.text }}"
-                             alt="<span class='glyphicon glyphicon-heart{% if not post.liked %}-empty{% endif %} btn-like'></span>"
+                             alt="<span class='glyphicon glyphicon-heart{% if not post.liked %}-empty{% endif %} btn-like'></span> {{ post.like_count }}"
                         >
                     </a>
                 {% endfor %}
