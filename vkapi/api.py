@@ -235,6 +235,6 @@ def get_best_pics(api, group_id):
     posts = load_posts(api, group_id, 500, verbose=False)
     processed_posts = process_posts(posts, group_id)
     set_ratings(processed_posts)
-    return [post for post in processed_posts if post['rating'] > 0.95]
+    return sorted([post for post in processed_posts if post['rating'] > 0.95], key=lambda x: -x['rating'])
 
 

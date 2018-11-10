@@ -13,4 +13,4 @@ community_id = 126622648
 posts = get_best_pics(api, community_id)
 
 for post in posts:
-	pprint(post)
+	print(post['like_count'], post['rating'], post['pic_url'])
