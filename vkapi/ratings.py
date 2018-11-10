@@ -1,56 +1,47 @@
+from collections import defaultdict
+from math import sqrt
 QUANTILE = 0.0
 SECS = 7200
 SEQUENCE = 50
+DAY_SECS = 24 * 60 * 60
 
 
 def get_normed_likes(posts):
-    pass
+    posts_div_t = defaultdict(list)
+    for post in posts:
+        posts_div_t[(post['timestamp'] % DAY_SECS) // SECS].append(post)
+    posts_div_t = dict(posts_div_t)
 
+    avgs = {k: sum([post['like_count'] for post in sub_posts]) / len(sub_posts) 
+        for k, sub_posts in posts_div_t.items()}
+   
+    norm_avgs = {k : (1.0 + len(avgs) * avg / sum(avgs.values())) / 2.0 for k, avg in avgs.items()}
+
+    return norm_avgs
+
+def init_rates(posts, norm_avgs):
+    for post in posts:
+        post['rating'] = post['like_count'] / norm_avgs[(post['timestamp'] % DAY_SECS) // SECS]
+
+def get_new_rates(posts, sequence_len):
+    ratings = [post['rating'] for post in posts]
+    new_rates = []
+    for i in range(len(ratings)):
+        l = max(0, i - sequence_len)
+        r = min(len(posts) - 1, i + sequence_len)
+        new_rates.append(sum(ratings[l : r]) / (len(ratings[l : r]) + 0.1))
+    return new_rates
 
 def set_ratings(posts):
-    likes_count = 0.01
+    normed_likes = get_normed_likes(posts)
+    init_rates(posts, normed_likes)
+    sequence_len = int(sqrt(len(posts) + 1))
+    new_rates = get_new_rates(posts, sequence_len)
+    avg_rate = 0.0
+    for post, new_rate in zip(posts, new_rates):
+        post['rating'] /= new_rate
+        avg_rate += post['rating']
+    avg_rate /= len(posts)
     for post in posts:
-        likes_count += post['like_count']
-    likes_count /= len(posts)
-    for post in posts:
-        post['rating'] = post['like_count'] / likes_count
-
-
-def get_photos(file_name):
-    return pickle.load(open(file_name, 'rb'))
-
-
-def get_photo_rates(photos, expectations):
-    exp_rates = [photo.likes / expectations[photo.second // SECS] for photo in photos]
-    soft_avgs = [soft_avg(exp_rates[t:t+SEQUENCE]) for t in range(len(exp_rates)-SEQUENCE)]
-    return [[photo, math.log(exp_rate / avg + 1) / math.log(2.0)]
-            for photo, avg, exp_rate in
-            zip(photos, soft_avgs, exp_rates)]
-
-
-def soft_avg(likes):
-    left_quantile = int(QUANTILE * len(likes))
-    right_quantile = int((1 - QUANTILE) * len(likes))
-    sorted_likes = sorted(likes)
-    sorted_likes = sorted_likes[left_quantile:right_quantile]
-    return sum(sorted_likes)/(len(sorted_likes) + 0.0)
-
-
-def get_best_photos(photos, destination, top):
-    photos = [photo for photo in photos if photo.likes]
-    print('count of photos={}'.format(len(photos)))
-
-    photos_div_t = defaultdict(list)
-    for photo in photos:
-        photos_div_t[photo.second // SECS].append(photo)
-
-    avgs = [sum([photo.likes for photo in sub_photos]) / len(sub_photos) for sub_photos in photos_div_t.values()]
-    norm_avgs = [len(avgs) * avg / sum(avgs) for avg in avgs]
-
-    photo_rates = get_photo_rates(photos, norm_avgs)
-    photo_rates.sort(key=lambda p_r: p_r[1], reverse=True)
-    # for index, p_r in enumerate(photo_rates[0:top]):
-        # img = io.imread(p_r[0].link)
-        # io.imsave('{}/{}({}).png'.format(destination, index, p_r[1]), img)
-
-    return photo_rates[:top]
+        post['rating'] /= avg_rate
+        

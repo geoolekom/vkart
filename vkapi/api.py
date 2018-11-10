@@ -6,7 +6,7 @@ import time
 
 try:
     from .ratings import set_ratings
-except ImportError:
+except Exception as e:
     from ratings import set_ratings
 
 try:
@@ -77,6 +77,11 @@ def get_group_albums(api, url):
     return api.photos.getAlbums(owner_id=-group_id)['items']
 
 
+def get_group_url(api, group_id):
+    group_info = api.groups.getById(group_id=str(group_id))[0]
+    return 'vk.com/{}'.format(group_info['screen_name'])
+
+
 def get_group_texts(api, url, max_posts=1e6):
     group_name = group_name_from_url(url)
     group_info = api.groups.getById(group_id=group_name, fields='status,description')[0]
@@ -85,7 +90,7 @@ def get_group_texts(api, url, max_posts=1e6):
     posts = get_group_posts(api, url, max_posts)['posts']
 
     return {
-        'url': 'vk.com/{}'.format(group_info['screen_name']),
+        'url': 'vk.com/{0}'.format(group_info['screen_name']),
         'username': group_info['name'],
         'title': group_info['screen_name'],
         'description': group_info['description'],
@@ -188,35 +193,39 @@ class Photo(object):
                 break
 
     def __str__(self):
-        return f'likes={self.likes}\nday={self.day}\nsecond={self.second}\nlink={self.link}\nwall_link={self.wall_link}'
+        return 'likes={0}\nday={1}\nsecond={2}\nlink={3}\nwall_link={4}'.format(self.likes, self.day, self.second, self.link, self.wall_link)
 
 
 def create_post(wall):
-    if 'attachments' not in wall:
-        return False, None
-    attachment = wall['attachments'][0]
-    if 'photo' not in attachment:
-        return False, None
+    best_size = {
+        'url': None,
+        'height': None,
+        'width': None
+    }
 
-    photo = attachment['photo']
-    best_size = photo['sizes'][0]
-    best_type = best_size['type']
-    for size in photo['sizes']:
-        if vk_size_priorities[size['type']] < vk_size_priorities[best_type]:
-            best_size = size
-            best_type = size['type']
+    if 'attachments' in wall:
+        attachment = wall['attachments'][0]
+        if 'photo' in attachment:
+            photo = attachment['photo']
+            best_size = photo['sizes'][0]
+            best_type = best_size['type']
+            for size in photo['sizes']:
+                if vk_size_priorities[size['type']] < vk_size_priorities[best_type]:
+                    best_size = size
+                    best_type = size['type']
 
     return True, {
-        'id': wall['id'],
-        'like_count': wall['likes']['count'],
-        'timestamp': wall['date'],
-        'post_url': 'https://vk.com/wall'.format(wall["from_id"], wall["id"]),
-        'text': wall['text'],
         'pic_url': best_size['url'],
         'height': best_size['height'],
         'width': best_size['width'],
+
+        'id': wall['id'],
+        'like_count': wall['likes']['count'],
+        'timestamp': wall['date'],
+        'post_url': 'https://vk.com/wall{0}_{1}'.format(wall["from_id"], wall["id"]),
+        'text': wall['text'],
+        'group_id': - wall['from_id'],
         'rating': 0.01,
-        'group_id': - wall['from_id']
     }
 
 
@@ -252,6 +261,6 @@ def get_best_pictures(api, group_id):
     posts = load_posts(api, group_id, 500, verbose=False)
     processed_posts = process_posts(posts)
     set_ratings(processed_posts)
-    return [post for post in processed_posts if post['rating'] > 0.95]
+    return sorted([post for post in processed_posts if post['rating'] > 0.95], key=lambda x: -x['rating'])
 
 
