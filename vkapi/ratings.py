@@ -2,6 +2,7 @@ QUANTILE = 0.0
 SECS = 7200
 SEQUENCE = 50
 
+
 def get_normed_likes(posts):
     pass
 
@@ -14,8 +15,10 @@ def set_ratings(posts):
     for post in posts:
         post['rating'] = post['like_count'] / likes_count
 
+
 def get_photos(file_name):
     return pickle.load(open(file_name, 'rb'))
+
 
 def get_photo_rates(photos, expectations):
     exp_rates = [photo.likes / expectations[photo.second // SECS] for photo in photos]
@@ -24,12 +27,14 @@ def get_photo_rates(photos, expectations):
             for photo, avg, exp_rate in
             zip(photos, soft_avgs, exp_rates)]
 
+
 def soft_avg(likes):
     left_quantile = int(QUANTILE * len(likes))
     right_quantile = int((1 - QUANTILE) * len(likes))
     sorted_likes = sorted(likes)
     sorted_likes = sorted_likes[left_quantile:right_quantile]
     return sum(sorted_likes)/(len(sorted_likes) + 0.0)
+
 
 def get_best_photos(photos, destination, top):
     photos = [photo for photo in photos if photo.likes]

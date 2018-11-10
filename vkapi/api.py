@@ -6,14 +6,13 @@ import time
 
 try:
     from .ratings import set_ratings
-except Exception:
+except ImportError:
     from ratings import set_ratings
 
 try:
     from .parameters import vk_size_priorities, access_token, version
-except Exception:
+except ImportError:
     from parameters import vk_size_priorities, access_token, version
-
 
 
 def handle_api_error(return_value=None):
@@ -100,7 +99,7 @@ def get_group(api, url):
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
     posts = load_posts(api, group_id, 10, verbose=False)
-    processed_posts = process_posts(posts, group_id)
+    processed_posts = process_posts(posts)
 
     return {
         'url': url,
@@ -116,7 +115,7 @@ def get_group_posts(api, url, max_posts=1e6):
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
     posts = load_posts(api, group_id, max_posts, verbose=False)
-    processed_posts = process_posts(posts, group_id)
+    processed_posts = process_posts(posts)
 
     return {
         'groups': [{
@@ -171,7 +170,7 @@ class Photo(object):
                 break
 
     def __str__(self):
-        return 'likes={self.likes}\nday={self.day}\nsecond={self.second}\nlink={self.link}\nwall_link={self.wall_link}'
+        return f'likes={self.likes}\nday={self.day}\nsecond={self.second}\nlink={self.link}\nwall_link={self.wall_link}'
 
 
 def create_post(wall):
@@ -208,13 +207,12 @@ def process_groups(api, group_ids):
     return [{'id': group['id'], 'screen_name': group['screen_name'], 'title': group['name']} for group in api_groups]
 
 
-def process_posts(walls, group_id):
+def process_posts(api_posts):
     posts = []
-    for wall in walls:
-        success_process, post = create_post(wall)
-        if success_process:
-            post['group_id'] = group_id  # TODO: выпилить, это есть в create_post
-            posts.append(post)
+    for post in api_posts:
+        success, post_dict = create_post(post)
+        if success:
+            posts.append(post_dict)
     return posts
 
 
@@ -224,19 +222,17 @@ def get_posts(api, group_ids: list):
     for group in groups:
         group_id = group['id']
         api_posts = load_posts(api, group_id, 10, verbose=False)
-        for post in api_posts:
-            success, post_dict = create_post(post)
-            if success:
-                posts.append(post_dict)
+        posts = process_posts(api_posts)
 
     return {
         'groups': groups,
         'posts': posts
     }
 
-def get_best_pics(api, group_id):
+
+def get_best_pictures(api, group_id):
     posts = load_posts(api, group_id, 500, verbose=False)
-    processed_posts = process_posts(posts, group_id)
+    processed_posts = process_posts(posts)
     set_ratings(processed_posts)
     return [post for post in processed_posts if post['rating'] > 0.95]
 
