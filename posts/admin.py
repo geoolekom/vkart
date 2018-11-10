@@ -19,6 +19,7 @@ class PostAdmin(admin.ModelAdmin):
 @admin.register(PublicGroup)
 class GroupAdmin(admin.ModelAdmin):
     list_display = 'id', 'title',
+    list_filter = 'genre',
 
 
 @admin.register(UserGroup)

@@ -31,6 +31,9 @@
     <script src="{% static 'core/libs/unitegallery/themes/tiles/ug-theme-tiles.js' %}"></script>
     <script>
     $(function () {
+        const urlToggleLike = '{% url "posts:toggle_like" %}';
+        const csrfToken = '{{ csrf_token }}';
+
         $('.gallery').each(function () {
             $(this).unitegallery({
                 gallery_theme: 'tiles',
@@ -40,9 +43,28 @@
             });
         });
 
+        var likeLocker = false;
         $(document).on('click', '.btn-like', function () {
+            if (likeLocker) {
+                return;
+            }
+            likeLocker = true;
             const likeBtn = $(this);
-            likeBtn.toggleClass('glyphicon-heart-empty').toggleClass('glyphicon-heart');
+            const data = {
+                post_id: likeBtn.attr('data-post-id'),
+                csrfmiddlewaretoken: csrfToken
+            };
+
+            $.post(urlToggleLike, data).done(function (r) {
+                likeBtn.toggleClass('glyphicon-heart-empty').toggleClass('glyphicon-heart');
+                setTimeout(function () {
+                    likeLocker = false;
+                }, 300);
+            }).fail(function () {
+                setTimeout(function () {
+                    likeLocker = false;
+                }, 300);
+            })
         });
 
         var urlLoadMorePosts;

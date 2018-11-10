@@ -2,11 +2,14 @@ import random
 import uuid
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
+from django.db.models import Q
 from django.http import Http404
-from django.views.generic import DetailView
-from django.views.generic import ListView, TemplateView
+from django.http import JsonResponse
+from django.views import View
+from django.views.generic import ListView, TemplateView, DetailView, CreateView
 
-from posts.models import Genre
+from posts.models import Genre, Like, Post
 
 
 class PictureList(LoginRequiredMixin, TemplateView):
@@ -29,7 +32,9 @@ class RandomPictureBlock(LoginRequiredMixin, ListView):
             group_weights = user_groups.values_list('rating', flat=True)
             chosen_groups = random.choices(user_groups, weights=group_weights, k=self.group_count)
             for user_group in chosen_groups:
-                group_posts = user_group.group.post_set.all()
+                expr = Count('like__pk', filter=Q(like__user=self.request.user))
+                group_posts = user_group.group.post_set.all().annotate(liked=expr)
+                print(group_posts.exclude(liked=0).values_list('group_id', 'id', 'liked'))
                 if group_posts.count():
                     post_weights = group_posts.values_list('rating', flat=True)
                     chosen_posts = random.choices(group_posts, weights=post_weights, k=self.post_count)
@@ -55,3 +60,30 @@ class GenreRandomPictureBlock(RandomPictureBlock):
         if not genre:
             raise Http404('Genre doesn\'t exist.')
         return super().get_user_groups().filter(group__genre=genre)
+
+
+class TogglePostLike(LoginRequiredMixin, View):
+    http_method_names = ['post']
+
+    def post(self, request, *args, **kwargs):
+        post_id = self.request.POST.get('post_id', '')
+        if post_id and post_id.isdigit():
+            like = Like.objects.filter(post_id=post_id, user=request.user).first()
+            if like:
+                like.delete()
+                return self.deleted()
+            else:
+                post = Post.objects.filter(id=post_id).first()
+                if post:
+                    Like.objects.create(post_id=post_id, user=request.user)
+                    return self.created()
+        return self.failure({'post_id': 'Такого поста не существует.'})
+
+    def deleted(self):
+        return JsonResponse({'status': 0})
+
+    def created(self):
+        return JsonResponse({'status': 1})
+
+    def failure(self, errors):
+        return JsonResponse({'errors': errors}, status=400)

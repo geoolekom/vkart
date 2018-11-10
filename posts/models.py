@@ -64,3 +64,16 @@ class UserGroup(models.Model):
 
     def __str__(self):
         return f'{self.user} в {self.group.title}'
+
+
+class Like(models.Model):
+    class Meta:
+        verbose_name = 'лайк'
+        verbose_name_plural = 'лайки'
+        unique_together = 'user', 'post',
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, verbose_name='пользователь')
+    post = models.ForeignKey('posts.Post', models.CASCADE, verbose_name='пост')
+
+    def __str__(self):
+        return f'{self.user} лайкнул {self.post}'
