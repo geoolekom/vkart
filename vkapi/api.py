@@ -7,7 +7,6 @@ import vk.exceptions
 import logging
 import time
 
-from django.conf import settings
 
 try:
     from .ratings import set_ratings
@@ -154,29 +153,62 @@ def get_group_posts(api, url, max_posts=1e6):
         'posts': processed_posts
     }
 
+load_posts_script = '''
+API.wall.get({{              
+"owner_id": -{0},
+"offset" : {1},
+"count" : 100,           
+"filter" : "owner"
+}})
+'''
+
+
+
 
 def load_posts(api, community_id, count, offset=0, verbose=True):
     current_offset = offset
     posts = []
-    while current_offset < offset + count:
-        try:
-            if verbose:
-                logging.info('current_offset={0}'.format(current_offset))
-            wall = api.wall.get(
-                owner_id=-community_id,
-                offset=current_offset,
-                count=100,
-                filter='owner')['items']
 
-            for item in wall:
-                if isinstance(item, dict) and len(posts) < count:
-                    posts.append(item)
+    request = ''
+    # print(count)
+    # print(offset)
+    while current_offset < count + offset:
+        request += load_posts_script.format(community_id, current_offset)
+        current_offset += 100
+        if current_offset < count + offset:
+            request += ', '
 
-            current_offset += 100
-        except Exception as e:
-            logging.error(e, exc_info=True)
-        finally:
-            time.sleep(0.2)
+    request = 'return [ ' + request + ' ];'
+    # print(request)
+    walls = api.execute(code=request)
+
+    # print(walls)
+    
+
+    # while current_offset < offset + count:
+    #     try:
+    #         if verbose:
+    #             logging.info('current_offset={0}'.format(current_offset))
+    #         wall = api.wall.get(
+    #             owner_id=-community_id,
+    #             offset=current_offset,
+    #             count=100,
+    #             filter='owner')['items']
+    # 
+    #         for item in wall:
+    #             if isinstance(item, dict) and len(posts) < count:
+    #                 posts.append(item)
+    # 
+    #         current_offset += 100
+    #     except Exception as e:
+    #         logging.error(e, exc_info=True)
+    #     finally:
+    #         time.sleep(0.2)
+
+    for wall in walls:
+        for item in wall['items']:
+            if isinstance(item, dict) and len(posts) < count:
+                posts.append(item)
 
     return posts
 
@@ -187,6 +219,11 @@ def create_post(wall):
         'height': None,
         'width': None
     }
+
+    if not 'attachments' in wall:
+        return False, None
+    if not 'photo' in wall['attachments'][0]:
+        return False, None
 
     if 'attachments' in wall:
         attachment = wall['attachments'][0]
