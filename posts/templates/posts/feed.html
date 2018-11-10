@@ -1,5 +1,50 @@
 {% extends 'core/base.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel='stylesheet' href='{% static 'core/libs/unitegallery/css/unite-gallery.css' %}' type='text/css' />
+    <style>
+        .btn-like {
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'core/libs/unitegallery/js/unitegallery.min.js' %}"></script>
+    <script src="{% static 'core/libs/unitegallery/themes/tiles/ug-theme-tiles.js' %}"></script>
+    <script>
+    $(function () {
+        $('.gallery').unitegallery({
+            gallery_theme: 'tiles',
+            tiles_type: 'justified',
+            tiles_max_columns: 4,
+            tile_show_link_icon: true,
+            tile_enable_textpanel: true
+        });
+
+        $(document).on('click', '.btn-like', function () {
+            const likeBtn = $(this);
+            likeBtn.toggleClass('glyphicon-heart-empty').toggleClass('glyphicon-heart');
+        });
+
+    })
+    </script>
+{% endblock %}
 
 {% block content %}
-    Контент
+    {% regroup post_list by group as posts_by_group %}
+    {% for group, post_list in posts_by_group %}
+    <h4>{{ group.title }}</h4>
+    <div id="gallery-{{ group.id }}" class="gallery">
+        {% for post in post_list %}
+            <a href="{{ post.post_url }}">
+                <img src="{{ post.pic_url }}" data-image="{{ post.pic_url }}"
+                     data-description="{{ post.text }}"
+                     alt="<span class='glyphicon glyphicon-heart{% if not post.liked %}-empty{% endif %} btn-like'></span>"
+                >
+            </a>
+        {% endfor %}
+    </div>
+    {% endfor %}
 {% endblock %}

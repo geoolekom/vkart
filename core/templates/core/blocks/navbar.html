@@ -15,7 +15,7 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}
-            <li><a>{{ user.get_full_name }}</a></li>
+            <li><a href="{{ user.get_link }}">{{ user.get_full_name }}</a></li>
             <li><a href="{% url 'accounts:logout' %}"><span class="glyphicon glyphicon-log-out"></span> Выйти</a></li>
             {% else %}
             <li><a href="{% url 'social:begin' 'vk-oauth2' %}"><span class="glyphicon glyphicon-log-in"></span> Войти</a></li>

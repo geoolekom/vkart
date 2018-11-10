@@ -43,7 +43,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.username
 
     def get_full_name(self):
-        return f'{self.last_name} {self.first_name}'
+        return f'{self.first_name} {self.last_name}'
 
     def get_short_name(self):
         return self.first_name
+
+    def get_link(self):
+        social_auth = self.social_auth.filter(provider='vk-oauth2').first()
+        if social_auth:
+            return f'https://vk.com/id{social_auth.uid}'
