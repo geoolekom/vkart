@@ -1,5 +1,7 @@
 .idea/
+.vscode/
 *.pyc
 __pycache__/
 build/conf/local.conf
 */.*
+*.csv

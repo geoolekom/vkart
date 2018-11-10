@@ -14,9 +14,9 @@ except Exception as e:
     from ratings import set_ratings
 
 try:
-    from .parameters import vk_size_priorities, access_token, version
-except Exception as e:
-    from parameters import vk_size_priorities, access_token, version
+    from .parameters import vk_size_priorities, access_token, version, sleep_constant
+except Exception:
+    from parameters import vk_size_priorities, access_token, version, sleep_constant
 
 
 def handle_api_error(return_value=None):
@@ -48,7 +48,7 @@ def iterate_call(call, count, max_offset=None, **kwargs):
     for offset in range(0, max_offset, count):
         count = min(count, max_offset - offset)
         call_result = call(offset=offset, count=count, **kwargs)['items']
-        time.sleep(0.4)
+        time.sleep(sleep_constant)
         for result in call_result:
             yield result
 
@@ -163,8 +163,6 @@ API.wall.get({{
 '''
 
 
-
-
 def load_posts(api, community_id, count, offset=0, verbose=True):
     current_offset = offset
     posts = []
@@ -179,12 +177,8 @@ def load_posts(api, community_id, count, offset=0, verbose=True):
             request += ', '
 
     request = 'return [ ' + request + ' ];'
-    # print(request)
     walls = api.execute(code=request)
-
-    # print(walls)
     
-
     # while current_offset < offset + count:
     #     try:
     #         if verbose:
