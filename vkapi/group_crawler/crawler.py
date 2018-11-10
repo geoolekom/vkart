@@ -3,6 +3,8 @@ from .recommendations import *
 from .parameters import *
 from .. import api as vkapi
 from time import sleep
+from ..parameters import sleep_constant
+import random
 
 
 def just_recommendations(api, public_id):
@@ -25,7 +27,8 @@ def groups_iterate(api, seed_groups):
         while len(unseen_groups) == 0:
             if len(stack_groups) == 0:
                 return None 
-            group_id = stack_groups.pop()
+            group_id = random.sample(stack_groups, 1)[0]
+            stack_groups.remove(group_id)
             seen_groups.add(group_id)
             try:
                 similar_group_ids = set(map(lambda x: x['id'], just_recommendations(api, group_id)))
