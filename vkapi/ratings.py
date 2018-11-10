@@ -5,6 +5,7 @@ SECS = 7200
 SEQUENCE = 50
 DAY_SECS = 24 * 60 * 60
 
+
 def get_normed_likes(posts):
     posts_div_t = defaultdict(list)
     for post in posts:
@@ -43,5 +44,4 @@ def set_ratings(posts):
     avg_rate /= len(posts)
     for post in posts:
         post['rating'] /= avg_rate
-
-
+        
