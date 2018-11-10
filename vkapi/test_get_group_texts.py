@@ -10,7 +10,6 @@ except:
 from pprint import pprint
 
 api = get_api()
-#texts = get_group_texts(api, 'jumoreski', 10)
-print(get_group_url(api, 136765630))
+texts = get_group_texts(api, 'jumoreski', 10)
 
-#pprint(texts)
+pprint(texts)
