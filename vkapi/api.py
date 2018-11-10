@@ -1,7 +1,7 @@
-import logging
 import vk
 import vk.exceptions
 
+import logging
 import time
 
 from .parameters import vk_size_priorities, access_token, version
@@ -54,6 +54,35 @@ def get_groups(api, uid):
         user_id=uid)
     )
 
+@handle_api_error([])
+def get_group_goods(api, url):
+    group_name = group_name_from_url(url)
+    group_id = api.groups.getById(group_id=group_name)[0]['id']
+    return list(iterate_call(api.market.get, 200, owner_id=-group_id))
+
+
+def get_group_texts(api, url, max_posts=1e6):
+    group_name = group_name_from_url(url)
+    group_info = api.groups.getById(group_id=group_name, fields='description')[0]
+    id = group_info['id']
+
+    posts = get_group_posts(api, url, max_posts)['posts']
+
+    return {
+        'username': group_info['name'],
+        'title': group_info['screen_name'],
+        'description': group_info['description'],
+        'posts': list(map(lambda post: post['text'], posts)),
+        'goods': list(
+            map(
+                lambda good: {
+                    'title': good['title'],
+                    'description': good['description'],
+                },
+                get_group_goods(api, url))
+        )
+    }
+
 
 def get_group(api, url):
     group_name = group_name_from_url(url)
@@ -71,11 +100,11 @@ def get_group(api, url):
     }
 
 
-def get_group_posts(api, url):
+def get_group_posts(api, url, max_posts=1e6):
     group_name = group_name_from_url(url)
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
-    posts = load_posts(api, group_id, 10, verbose=False)
+    posts = load_posts(api, group_id, max_posts, verbose=False)
     processed_posts = process_posts(posts, group_id)
 
     return {
