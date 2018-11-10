@@ -12,11 +12,12 @@ posts = load_posts(api, community_id, 5, user_token, version)
 print('posts loaded!')
 
 for post in posts:
-	pprint(post)
-	print('-----------------')
+    pprint(post)
+    print('-----------------')
 
 processed_posts = process_posts(posts)
 
 for post in processed_posts:
-	pprint(post)
-	print('-----------------')
+    pprint(post)
+    print('-----------------')
+
