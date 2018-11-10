@@ -63,6 +63,7 @@ def get_groups(api, uid):
         user_id=uid)
     )
 
+
 @handle_api_error([])
 def get_group_goods(api, url):
     group_name = group_name_from_url(url)
@@ -78,6 +79,7 @@ def get_group_texts(api, url, max_posts=1e6):
     posts = get_group_posts(api, url, max_posts)['posts']
 
     return {
+        'url': 'vk.com/{}'.format(group_info['screen_name']),
         'username': group_info['name'],
         'title': group_info['screen_name'],
         'description': group_info['description'],
