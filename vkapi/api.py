@@ -77,6 +77,11 @@ def get_group_albums(api, url):
     return api.photos.getAlbums(owner_id=-group_id)['items']
 
 
+def get_group_url(api, group_id):
+    group_info = api.groups.getById(group_id=str(group_id))[0]
+    return 'vk.com/{}'.format(group_info['screen_name'])
+
+
 def get_group_texts(api, url, max_posts=1e6):
     group_name = group_name_from_url(url)
     group_info = api.groups.getById(group_id=group_name, fields='status,description')[0]
