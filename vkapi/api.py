@@ -90,7 +90,7 @@ def get_group_texts(api, url, max_posts=1e6):
     posts = get_group_posts(api, url, max_posts)['posts']
 
     return {
-        'url': 'vk.com/{}'.format(group_info['screen_name']),
+        'url': 'vk.com/{0}'.format(group_info['screen_name']),
         'username': group_info['name'],
         'title': group_info['screen_name'],
         'description': group_info['description'],
@@ -193,7 +193,7 @@ class Photo(object):
                 break
 
     def __str__(self):
-        return 'likes={}\nday={}\nsecond={}\nlink={}\nwall_link={}'.format(self.likes, self.day, self.second, self.link, self.wall_link)
+        return 'likes={0}\nday={1}\nsecond={2}\nlink={3}\nwall_link={4}'.format(self.likes, self.day, self.second, self.link, self.wall_link)
 
 
 def create_post(wall):
@@ -222,7 +222,7 @@ def create_post(wall):
         'id': wall['id'],
         'like_count': wall['likes']['count'],
         'timestamp': wall['date'],
-        'post_url': 'https://vk.com/wall'.format(wall["from_id"], wall["id"]),
+        'post_url': 'https://vk.com/wall{0}_{1}'.format(wall["from_id"], wall["id"]),
         'text': wall['text'],
         'group_id': - wall['from_id'],
         'rating': 0.01,
