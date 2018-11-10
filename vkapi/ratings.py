@@ -3,13 +3,16 @@ SECS = 7200
 SEQUENCE = 50
 
 def get_normed_likes(posts):
+    pass
 
 
 def set_ratings(posts):
-    norm
-
-
-
+    likes_count = 0.01
+    for post in posts:
+        likes_count += post['like_count']
+    likes_count /= len(posts)
+    for post in posts:
+        post['rating'] = post['like_count'] / likes_count
 
 def get_photos(file_name):
     return pickle.load(open(file_name, 'rb'))
