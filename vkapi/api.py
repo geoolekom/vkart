@@ -119,9 +119,8 @@ class Photo(object):
         self.likes = post['likes']['count']
         self.day = post['date'] / 86400
         self.second = post['date'] % 86400
-        self.wall_link = 'https://vk.com/wall{}?own=1&w=wall{}_{}'.format(post['from_id'],
-                                                                          post['from_id'],
-                                                                          post['id'])
+        self.wall_link = f'https://vk.com/wall{wall["from_id"]}_{wall["id"]}'
+
         attachment = post['attachment']
         photo = attachment['photo']
         sizes = ['src_xxxbig', 'src_xxbig', 'src_xbig', 'src_big', 'src', 'src_small']
@@ -185,7 +184,9 @@ def get_posts(api, group_ids: list):
         group_id = group['id']
         api_posts = load_posts(api, group_id, 10, verbose=False)
         for post in api_posts:
-            posts.append(create_post(post))
+            success, post_dict = create_post(post)
+            if success:
+                posts.append(post_dict)
 
     return {
         'groups': groups,
