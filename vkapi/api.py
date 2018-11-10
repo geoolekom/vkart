@@ -199,8 +199,9 @@ def create_post(wall):
                     best_size = size
                     best_type = size['type']
 
-    tz = pytz.timezone(settings.TIME_ZONE)
-    timestamp = datetime.fromtimestamp(wall['date'], tz)
+    timestamp = wall['date']
+    # tz = pytz.timezone(settings.TIME_ZONE)
+    # timestamp = datetime.fromtimestamp(timestamp, tz)
 
     return True, {
         'pic_url': best_size['url'],
@@ -208,6 +209,7 @@ def create_post(wall):
         'width': best_size['width'],
 
         'vk_id': wall['id'],
+        'like_count': wall['likes']['count'],
         'timestamp': timestamp,
         'post_url': 'https://vk.com/wall{0}_{1}'.format(wall["from_id"], wall["id"]),
         'text': wall['text'],
@@ -249,5 +251,3 @@ def get_best_pictures(api, group_id):
     processed_posts = process_posts(posts)
     set_ratings(processed_posts)
     return sorted([post for post in processed_posts if post['rating'] > 0.95], key=lambda x: -x['rating'])
-
-

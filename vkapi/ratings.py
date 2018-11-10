@@ -19,9 +19,11 @@ def get_normed_likes(posts):
 
     return norm_avgs
 
+
 def init_rates(posts, norm_avgs):
     for post in posts:
         post['rating'] = post['like_count'] / norm_avgs[(post['timestamp'] % DAY_SECS) // SECS]
+
 
 def get_new_rates(posts, sequence_len):
     ratings = [post['rating'] for post in posts]
@@ -31,6 +33,7 @@ def get_new_rates(posts, sequence_len):
         r = min(len(posts) - 1, i + sequence_len)
         new_rates.append(sum(ratings[l : r]) / (len(ratings[l : r]) + 0.1))
     return new_rates
+
 
 def set_ratings(posts):
     normed_likes = get_normed_likes(posts)
@@ -44,4 +47,3 @@ def set_ratings(posts):
     avg_rate /= len(posts)
     for post in posts:
         post['rating'] /= avg_rate
-        
