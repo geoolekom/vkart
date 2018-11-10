@@ -1,14 +1,8 @@
-from collections import defaultdict
-
 import random
 import uuid
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, TemplateView
-
-from posts.models import PublicGroup, Post
-from vkapi.api import get_best_pictures, process_groups
-from vkapi.group_ranker import rank_groups_for_user
 
 
 class PictureList(LoginRequiredMixin, TemplateView):

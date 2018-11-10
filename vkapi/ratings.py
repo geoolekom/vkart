@@ -36,6 +36,8 @@ def get_new_rates(posts, sequence_len):
 
 
 def set_ratings(posts):
+    if len(posts) == 0:
+        return
     normed_likes = get_normed_likes(posts)
     init_rates(posts, normed_likes)
     sequence_len = int(sqrt(len(posts) + 1))

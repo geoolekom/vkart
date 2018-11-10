@@ -214,9 +214,9 @@ def create_post(wall):
         'width': None
     }
 
-    if not 'attachments' in wall:
+    if 'attachments' not in wall:
         return False, None
-    if not 'photo' in wall['attachments'][0]:
+    if 'photo' not in wall['attachments'][0]:
         return False, None
 
     if 'attachments' in wall:
@@ -230,10 +230,6 @@ def create_post(wall):
                     best_size = size
                     best_type = size['type']
 
-    timestamp = wall['date']
-    # tz = pytz.timezone(settings.TIME_ZONE)
-    # timestamp = datetime.fromtimestamp(timestamp, tz)
-
     return True, {
         'pic_url': best_size['url'],
         'height': best_size['height'],
@@ -241,7 +237,7 @@ def create_post(wall):
 
         'vk_id': wall['id'],
         'like_count': wall['likes']['count'],
-        'timestamp': timestamp,
+        'timestamp': wall['date'],
         'post_url': 'https://vk.com/wall{0}_{1}'.format(wall["from_id"], wall["id"]),
         'text': wall['text'],
         'group_id': - wall['from_id'],
@@ -251,7 +247,7 @@ def create_post(wall):
 
 def process_groups(api, group_ids):
     api_groups = api.groups.getById(group_ids=group_ids)
-    return [{'id': group['id'], 'screen_name': group['screen_name'], 'title': group['name']} for group in api_groups]
+    return {group['id']: {'screen_name': group['screen_name'], 'title': group['name']} for group in api_groups}
 
 
 def process_posts(api_posts):
@@ -261,20 +257,6 @@ def process_posts(api_posts):
         if success:
             posts.append(post_dict)
     return posts
-
-
-def get_posts(api, group_ids: list):
-    groups = process_groups(api, group_ids)
-    posts = []
-    for group in groups:
-        group_id = group['id']
-        api_posts = load_posts(api, group_id, 10, verbose=False)
-        posts = process_posts(api_posts)
-
-    return {
-        'groups': groups,
-        'posts': posts
-    }
 
 
 def get_best_pictures(api, group_id):

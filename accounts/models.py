@@ -67,6 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_api(self):
         social_auth = self.get_vk_auth()
-        data = social_auth.extra_data
-        api = get_api_by_token(data.get('access_token'))
-        return api
+        if social_auth:
+            data = social_auth.extra_data
+            api = get_api_by_token(data.get('access_token'))
+            return api
