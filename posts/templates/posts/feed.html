@@ -15,12 +15,13 @@
     <script src="{% static 'core/libs/unitegallery/themes/tiles/ug-theme-tiles.js' %}"></script>
     <script>
     $(function () {
-        $('.gallery').unitegallery({
-            gallery_theme: 'tiles',
-            tiles_type: 'justified',
-            tiles_max_columns: 4,
-            tile_show_link_icon: true,
-            tile_enable_textpanel: true
+        $('.gallery').each(function () {
+            $(this).unitegallery({
+                gallery_theme: 'tiles',
+                tiles_type: 'justified',
+                tile_show_link_icon: true,
+                tile_enable_textpanel: true
+            });
         });
 
         $(document).on('click', '.btn-like', function () {
@@ -33,18 +34,25 @@
 {% endblock %}
 
 {% block content %}
-    {% regroup post_list by group as posts_by_group %}
-    {% for group, post_list in posts_by_group %}
-    <h4>{{ group.title }}</h4>
-    <div id="gallery-{{ group.id }}" class="gallery">
-        {% for post in post_list %}
-            <a href="{{ post.post_url }}">
-                <img src="{{ post.pic_url }}" data-image="{{ post.pic_url }}"
-                     data-description="{{ post.text }}"
-                     alt="<span class='glyphicon glyphicon-heart{% if not post.liked %}-empty{% endif %} btn-like'></span>"
-                >
-            </a>
-        {% endfor %}
-    </div>
+    {% for post_group in object_list %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    <a href="https://vk.com/{{ post_group.group.screen_name }}">{{ post_group.group.title }}</a>
+                </h3>
+            </div>
+            <div class="panel-body">
+                <div id="gallery-{{ post_group.id }}" class="gallery">
+                    {% for post in post_group.posts.all %}
+                        <a href="{{ post.post_url }}">
+                            <img src="{{ post.pic_url }}" data-image="{{ post.pic_url }}"
+                                 data-description="{{ post.text }}"
+                                 alt="<span class='glyphicon glyphicon-heart{% if not post.liked %}-empty{% endif %} btn-like'></span>"
+                            >
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     {% endfor %}
 {% endblock %}

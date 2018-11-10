@@ -6,14 +6,13 @@ import time
 
 try:
     from .ratings import set_ratings
-except Exception:
+except ImportError:
     from ratings import set_ratings
 
 try:
     from .parameters import vk_size_priorities, access_token, version, sleep_constant
 except Exception:
     from parameters import vk_size_priorities, access_token, version, sleep_constant
-
 
 
 def handle_api_error(return_value=None):
@@ -71,9 +70,16 @@ def get_group_goods(api, url):
     return list(iterate_call(api.market.get, 200, owner_id=-group_id))
 
 
+@handle_api_error([])
+def get_group_albums(api, url):
+    group_name = group_name_from_url(url)
+    group_id = api.groups.getById(group_id=group_name)[0]['id']
+    return api.photos.getAlbums(owner_id=-group_id)['items']
+
+
 def get_group_texts(api, url, max_posts=1e6):
     group_name = group_name_from_url(url)
-    group_info = api.groups.getById(group_id=group_name, fields='description')[0]
+    group_info = api.groups.getById(group_id=group_name, fields='status,description')[0]
     id = group_info['id']
 
     posts = get_group_posts(api, url, max_posts)['posts']
@@ -83,7 +89,18 @@ def get_group_texts(api, url, max_posts=1e6):
         'username': group_info['name'],
         'title': group_info['screen_name'],
         'description': group_info['description'],
+        'status': group_info['status'],
         'posts': list(map(lambda post: post['text'], posts)),
+
+        'albums': list(
+            map(
+                lambda album: {
+                    'title': album['title'],
+                    'description': album['description']
+                },
+                get_group_albums(api, url)
+            )),
+
         'goods': list(
             map(
                 lambda good: {
@@ -100,7 +117,7 @@ def get_group(api, url):
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
     posts = load_posts(api, group_id, 10, verbose=False)
-    processed_posts = process_posts(posts, group_id)
+    processed_posts = process_posts(posts)
 
     return {
         'url': url,
@@ -116,7 +133,7 @@ def get_group_posts(api, url, max_posts=1e6):
     group_id = api.groups.getById(group_id=group_name)[0]['id']
 
     posts = load_posts(api, group_id, max_posts, verbose=False)
-    processed_posts = process_posts(posts, group_id)
+    processed_posts = process_posts(posts)
 
     return {
         'groups': [{
@@ -146,9 +163,10 @@ def load_posts(api, community_id, count, offset=0, verbose=True):
                     posts.append(item)
 
             current_offset += 100
-            time.sleep(sleep_constant)
         except Exception as e:
             logging.error(e, exc_info=True)
+        finally:
+            time.sleep(sleep_constant)
 
     return posts
 
@@ -159,7 +177,7 @@ class Photo(object):
         self.likes = post['likes']['count']
         self.day = post['date'] / 86400
         self.second = post['date'] % 86400
-        self.wall_link = 'https://vk.com/wall{}_{}'.format(wall["from_id"], wall["id"])
+        self.wall_link = f'https://vk.com/wall{post["from_id"]}_{post["id"]}'
 
         attachment = post['attachment']
         photo = attachment['photo']
@@ -170,7 +188,7 @@ class Photo(object):
                 break
 
     def __str__(self):
-        return 'likes={self.likes}\nday={self.day}\nsecond={self.second}\nlink={self.link}\nwall_link={self.wall_link}'
+        return f'likes={self.likes}\nday={self.day}\nsecond={self.second}\nlink={self.link}\nwall_link={self.wall_link}'
 
 
 def create_post(wall):
@@ -207,13 +225,12 @@ def process_groups(api, group_ids):
     return [{'id': group['id'], 'screen_name': group['screen_name'], 'title': group['name']} for group in api_groups]
 
 
-def process_posts(walls, group_id):
+def process_posts(api_posts):
     posts = []
-    for wall in walls:
-        success_process, post = create_post(wall)
-        if success_process:
-            post['group_id'] = group_id  # TODO: выпилить, это есть в create_post
-            posts.append(post)
+    for post in api_posts:
+        success, post_dict = create_post(post)
+        if success:
+            posts.append(post_dict)
     return posts
 
 
@@ -223,19 +240,17 @@ def get_posts(api, group_ids: list):
     for group in groups:
         group_id = group['id']
         api_posts = load_posts(api, group_id, 10, verbose=False)
-        for post in api_posts:
-            success, post_dict = create_post(post)
-            if success:
-                posts.append(post_dict)
+        posts = process_posts(api_posts)
 
     return {
         'groups': groups,
         'posts': posts
     }
 
-def get_best_pics(api, group_id):
+
+def get_best_pictures(api, group_id):
     posts = load_posts(api, group_id, 500, verbose=False)
-    processed_posts = process_posts(posts, group_id)
+    processed_posts = process_posts(posts)
     set_ratings(processed_posts)
     return [post for post in processed_posts if post['rating'] > 0.95]
 
