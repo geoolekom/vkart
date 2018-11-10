@@ -71,9 +71,16 @@ def get_group_goods(api, url):
     return list(iterate_call(api.market.get, 200, owner_id=-group_id))
 
 
+@handle_api_error([])
+def get_group_albums(api, url):
+    group_name = group_name_from_url(url)
+    group_id = api.groups.getById(group_id=group_name)[0]['id']
+    return api.photos.getAlbums(owner_id=-group_id)['items']
+
+
 def get_group_texts(api, url, max_posts=1e6):
     group_name = group_name_from_url(url)
-    group_info = api.groups.getById(group_id=group_name, fields='description')[0]
+    group_info = api.groups.getById(group_id=group_name, fields='status,description')[0]
     id = group_info['id']
 
     posts = get_group_posts(api, url, max_posts)['posts']
@@ -83,7 +90,18 @@ def get_group_texts(api, url, max_posts=1e6):
         'username': group_info['name'],
         'title': group_info['screen_name'],
         'description': group_info['description'],
+        'status': group_info['status'],
         'posts': list(map(lambda post: post['text'], posts)),
+
+        'albums': list(
+            map(
+                lambda album: {
+                    'title': album['title'],
+                    'description': album['description']
+                },
+                get_group_albums(api, url)
+            )),
+
         'goods': list(
             map(
                 lambda good: {
