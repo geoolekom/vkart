@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.http import JsonResponse
 from django.views import View
-from django.views.generic import ListView, TemplateView, DetailView, CreateView
+from django.views.generic import ListView, TemplateView, DetailView
 
 from posts.models import Genre, Like, Post
 
@@ -34,7 +34,6 @@ class RandomPictureBlock(LoginRequiredMixin, ListView):
             for user_group in chosen_groups:
                 expr = Count('like__pk', filter=Q(like__user=self.request.user))
                 group_posts = user_group.group.post_set.all().annotate(liked=expr)
-                print(group_posts.exclude(liked=0).values_list('group_id', 'id', 'liked'))
                 if group_posts.count():
                     post_weights = group_posts.values_list('rating', flat=True)
                     chosen_posts = random.choices(group_posts, weights=post_weights, k=self.post_count)
@@ -66,16 +65,17 @@ class TogglePostLike(LoginRequiredMixin, View):
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
+        user = request.user
         post_id = self.request.POST.get('post_id', '')
         if post_id and post_id.isdigit():
-            like = Like.objects.filter(post_id=post_id, user=request.user).first()
-            if like:
-                like.delete()
-                return self.deleted()
-            else:
-                post = Post.objects.filter(id=post_id).first()
-                if post:
-                    Like.objects.create(post_id=post_id, user=request.user)
+            post = Post.objects.filter(id=post_id).first()
+            if post:
+                like = Like.objects.filter(post_id=post_id, user=user).first()
+                if like:
+                    like.delete()
+                    return self.deleted()
+                else:
+                    Like.objects.create(post_id=post_id, user=user)
                     return self.created()
         return self.failure({'post_id': 'Такого поста не существует.'})
 
