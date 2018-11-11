@@ -84,6 +84,13 @@
                 $('#loader-panel').hide();
                 currentPage ++;
                 loadingInProcess = false;
+            }).fail(function () {
+                loadingInProcess = false;
+                setTimeout(function () {
+                    if (!loadingInProcess) {
+                        loadBlock();
+                    }
+                }, 1000)
             });
         };
 

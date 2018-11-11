@@ -42,8 +42,7 @@ class RandomPictureBlock(LoginRequiredMixin, ListView):
                         'group': user_group.group,
                         'posts': list(set(chosen_posts))
                     }
-        else:
-            return []
+        raise Http404()
 
 
 class GenrePictureList(LoginRequiredMixin, DetailView):
