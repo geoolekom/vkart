@@ -10,10 +10,12 @@
                     <h3 class="panel-title">VK ART: Войти</h3>
                 </div>
                 <div class="panel-body">
-                    {% lorem %}
-                    <p></p>
+                    <div>
+                        Творчество художников с просторов ВК уже ждет тебя — осталось только авторизоваться!
+                    </div>
+                    <p>&nbsp;</p>
                     <div class="text-center">
-                    <a class="btn btn-default" href="{% url 'social:begin' 'vk-oauth2' %}">
+                    <a class="btn btn-default" style="padding: 5px 58px 5px 40px; border: none;" href="{% url 'social:begin' 'vk-oauth2' %}">
                         <img src="{% static 'core/img/vk_transparent.png' %}" width="34">&nbsp;&nbsp;<span>Войти</span>
                     </a>
                     </div>
