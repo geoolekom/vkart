@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from posts.models import Post, PublicGroup, UserGroup, Genre
+from posts.models import Post, PublicGroup, UserGroup, Genre, Like
 
 
 @admin.register(Genre)
@@ -26,3 +26,11 @@ class GroupAdmin(admin.ModelAdmin):
 class UserGroupAdmin(admin.ModelAdmin):
     list_display = 'user', 'group', 'rating',
     raw_id_fields = 'user', 'group',
+
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = 'user', 'post',
+    raw_id_fields = 'user', 'post',
+    search_fields = 'user__last_name', 'user_first_name', 'post__text'
+    list_select_related = 'user', 'post',

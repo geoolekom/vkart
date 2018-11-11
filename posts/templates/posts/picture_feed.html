@@ -93,6 +93,12 @@
                 loadBlock();
             }
         });
+
+        $(window).on('touchend', function(event) {
+            if(window.pageYOffset + $(window).height() > $(document).height() - 50 && !loadingInProcess) {
+                loadBlock();
+            }
+        });
     })
     </script>
 {% endblock %}
