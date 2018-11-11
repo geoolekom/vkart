@@ -10,6 +10,7 @@ def train(api, path):
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.ensemble import GradientBoostingClassifier
     from sklearn.externals import joblib
+    from sklearn.cluster import KMeans
     import umap
     import matplotlib.pyplot as plt
     df = pd.read_csv(path)
@@ -18,8 +19,10 @@ def train(api, path):
     vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform([corpus[group_id] for group_id in group_ids])
     joblib.dump(vectorizer, 'vectorizer.joblib')
+    kmeans = KMeans(3).fit(X)
+    labels = kmeans.labels_
     embedding = umap.UMAP().fit_transform(X)
-    plt.scatter(embedding)
+    plt.scatter(embedding[:, 0], embedding[:, 1], cmap=labels)
     plt.show()
     
 
