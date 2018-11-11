@@ -89,13 +89,13 @@
 
         loadBlock();
         $(window).scroll(function() {
-            if($(window).scrollTop() + $(window).height() > $(document).height() - 50 && !loadingInProcess) {
+            if($(window).scrollTop() + $(window).height() > $(document).height() - 100 && !loadingInProcess) {
                 loadBlock();
             }
         });
 
         $(window).on('touchend', function(event) {
-            if(window.pageYOffset + $(window).height() > $(document).height() - 50 && !loadingInProcess) {
+            if(window.pageYOffset + 2 * $(window).height() > $(document).height() && !loadingInProcess) {
                 loadBlock();
             }
         });
