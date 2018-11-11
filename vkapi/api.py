@@ -223,6 +223,8 @@ def create_post(wall):
         attachment = wall['attachments'][0]
         if 'photo' in attachment:
             photo = attachment['photo']
+            if 'sizes' not in photo:
+                return False, None
             best_size = photo['sizes'][0]
             best_type = best_size['type']
             for size in photo['sizes']:

@@ -15,11 +15,15 @@ USER_MODEL = get_user_model()
 @app.task
 def update_best_posts(user_id):
     user = USER_MODEL.objects.filter(id=user_id).first()
-    if user:
+    if not user:
+        print('Нет пользователя')
+    else:
         api = user.get_api()
         uid = user.get_uid()
 
-        if uid and api:
+        if not (uid and api):
+            print('Нет uid или api')
+        else:
             print('Обновляем пользователя {0}'.format(uid))
             group_dict_list = rank_groups_for_user(api, uid)
             group_ids = [group_dict.get('id') for group_dict in group_dict_list]
